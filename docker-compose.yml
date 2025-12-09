@@ -1,89 +1,70 @@
 version: "3.9"
 
 services:
-  # --- Databases ---
-  db_users:
-    image: postgres:16
-    container_name: lms-db-users
-    environment:
-      POSTGRES_DB: ${USER_DB_NAME}
-      POSTGRES_USER: ${USER_DB_USER}
-      POSTGRES_PASSWORD: ${USER_DB_PASSWORD}
-    volumes:
-      - users_db_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -d ${USER_DB_NAME} -U ${USER_DB_USER}"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+    db:
+        image: postgres:16
+        container_name: lms-db
+        environment:
+            POSTGRES_USER: ${POSTGRES_SUPERUSER}
+            POSTGRES_PASSWORD: ${POSTGRES_SUPERPASSWORD}
+        ports:
+            - "${POSTGRES_PORT}:5432"
+        volumes:
+            - db_data:/var/lib/postgresql/data
+            - ./db/init:/docker-entrypoint-initdb.d:ro
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_SUPERUSER}"]
+            interval: 5s
+            timeout: 5s
+            retries: 20
 
-  db_catalog:
-    image: postgres:16
-    container_name: lms-db-catalog
-    environment:
-      POSTGRES_DB: ${CATALOG_DB_NAME}
-      POSTGRES_USER: ${CATALOG_DB_USER}
-      POSTGRES_PASSWORD: ${CATALOG_DB_PASSWORD}
-    volumes:
-      - catalog_db_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -d ${CATALOG_DB_NAME} -U ${CATALOG_DB_USER}"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+    pgadmin:
+        image: dpage/pgadmin4:8
+        container_name: lms-pgadmin
+        environment:
+            PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+            PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+        ports:
+            - "${PGADMIN_PORT}:80"
+        depends_on:
+            db:
+                condition: service_healthy
 
-  # --- Admin UI ---
-  pgadmin:
-    image: dpage/pgadmin4:8
-    container_name: lms-pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
-    ports:
-      - "${PGADMIN_PORT}:80"
-    depends_on:
-      db_users:
-        condition: service_healthy
-      db_catalog:
-        condition: service_healthy
+    user-service:
+        build:
+            context: ./services/user-service
+        container_name: lms-user
+        environment:
+            PORT: 8000
+            DATABASE_URL: "postgresql://${USER_DB_USER}:${USER_DB_PASSWORD}@db:5432/${USER_DB_NAME}"
+        ports:
+            - "${USER_SERVICE_PORT}:8000"
+        depends_on:
+            db:
+                condition: service_healthy
+        healthcheck:
+            test: ["CMD", "wget", "-qO-", "http://localhost:8000/health"]
+            interval: 5s
+            timeout: 3s
+            retries: 20
 
-  # --- Services ---
-  user-service:
-    build:
-      context: ./services/user-service
-    container_name: lms-user
-    environment:
-      PORT: 8000
-      DATABASE_URL: "postgresql://${USER_DB_USER}:${USER_DB_PASSWORD}@db_users:5432/${USER_DB_NAME}"
-    ports:
-      - "${USER_SERVICE_PORT}:8000"
-    depends_on:
-      db_users:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8000/health"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
-
-  catalog-service:
-    build:
-      context: ./services/catalog-service
-    container_name: lms-catalog
-    environment:
-      PORT: 8000
-      DATABASE_URL: "postgresql://${CATALOG_DB_USER}:${CATALOG_DB_PASSWORD}@db_catalog:5432/${CATALOG_DB_NAME}"
-    ports:
-      - "${CATALOG_SERVICE_PORT}:8000"
-    depends_on:
-      db_catalog:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8000/health"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
+    catalog-service:
+        build:
+            context: ./services/catalog-service
+        container_name: lms-catalog
+        environment:
+            PORT: 8000
+            DATABASE_URL: "postgresql://${CATALOG_DB_USER}:${CATALOG_DB_PASSWORD}@db:5432/${CATALOG_DB_NAME}"
+        ports:
+            - "${CATALOG_SERVICE_PORT}:8000"
+        depends_on:
+            db:
+                condition: service_healthy
+        healthcheck:
+            test: ["CMD", "wget", "-qO-", "http://localhost:8000/health"]
+            interval: 5s
+            timeout: 3s
+            retries: 20
 
 volumes:
-  users_db_data:
-  catalog_db_data:
+    - ./db/init:/docker-entrypoint-initdb.d:ro
