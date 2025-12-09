@@ -4,8 +4,14 @@ target-version = ["py311"]
 
 [tool.ruff]
 line-length = 100
-lint.select = ["E","F","I","B","UP"]
-lint.ignore = ["E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["E501"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
