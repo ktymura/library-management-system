@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-app = FastAPI(title="MTO App")
+app = FastAPI(title="Library Management System App")
 
 
 @app.get("/health")
