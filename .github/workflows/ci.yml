@@ -22,6 +22,7 @@ jobs:
                   python -m pip install --upgrade pip
                   pip install -r requirements.txt || true
                   pip install fastapi uvicorn[standard] pytest httpx black ruff
+                  pip install alembic psycopg[binary]
 
             - name: Ruff lint
               run: ruff check .
