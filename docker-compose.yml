@@ -7,6 +7,12 @@ services:
         environment:
             POSTGRES_USER: ${POSTGRES_SUPERUSER}
             POSTGRES_PASSWORD: ${POSTGRES_SUPERPASSWORD}
+            USER_DB_NAME: ${USER_DB_NAME}
+            USER_DB_USER: ${USER_DB_USER}
+            USER_DB_PASSWORD: ${USER_DB_PASSWORD}
+            CATALOG_DB_NAME: ${CATALOG_DB_NAME}
+            CATALOG_DB_USER: ${CATALOG_DB_USER}
+            CATALOG_DB_PASSWORD: ${CATALOG_DB_PASSWORD}
         ports:
             - "${POSTGRES_PORT}:5432"
         volumes:
@@ -67,4 +73,4 @@ services:
             retries: 20
 
 volumes:
-    - ./db/init:/docker-entrypoint-initdb.d:ro
+    db_data:
