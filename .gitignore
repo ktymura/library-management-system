@@ -1,11 +1,90 @@
-.venv/
+# --- PYTHON ---
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.so
+.python-version
+
+# Virtual environments
+.venv/
+env/
+venv/
+
+# Byte-compiled
+*.py[cod]
+*$py.class
+
+# --- TESTING ---
 .pytest_cache/
 .coverage
+htmlcov/
+
+# --- BUILD / DISTRIBUTION ---
 dist/
 build/
-.vscode/*.log
+*.egg-info/
+.eggs/
+
+# --- DOCKER ---
+# Docker build cache and artifacts
+*.log
+*.pid
+*.tar
+db_data/
+pgadmin_data/
+
+# --- ENV FILES ---
+# Never commit secret environment files!
+.env
+.env.*
+!.env.example   # but keep example env
+
+# --- EDITORS / IDE ---
+.vscode/*
+!.vscode/settings.json
+!.vscode/launch.json
+!.vscode/tasks.json
+
+.idea/
+*.iml
+
+# --- OS SYSTEM TRASH ---
 .DS_Store
+Thumbs.db
+
+# --- NODE (if using any frontend later) ---
+node_modules/
+
+# --- ALembic (DB migrations) ---
+alembic.ini
+alembic/versions/*.pyc
+alembic/versions/__pycache__/
+
+# --- PROJECT SPECIFIC ---
+# Local PostgreSQL data volume
+*/db_data/
+*/pgadmin_data/
+
+# compiled Docker layers (sometimes created accidentally)
+docker-compose.override.yml
+
+# Prevent committing container state
+**/containers/
+**/volumes/
+
+# --- LOGS ---
+*.log
+*.err
+*.out
+
+# --- RUN / TEMP FILES ---
+tmp/
+temp/
+*.tmp
+
+# --- MICRO-SERVICES ---
+services/*/.venv/
+services/*/__pycache__/
+services/*/app/__pycache__/
+services/*/tests/__pycache__/

@@ -2,7 +2,7 @@ import os
 
 from fastapi import FastAPI
 
-app = FastAPI(title="LMS - User Service")
+app = FastAPI(title="LMS - Catalog Service")
 
 
 @app.get("/health")
