@@ -43,16 +43,13 @@ Po uruchomieniu:
 
 ## Dokumentacja
 
-Szczegółowa dokumentacja techniczna znajduje się w katalogu:
-
-```
-docs/
-├── architecture.md
-```
+Pełna dokumentacja projektu znajduje się w katalogu `docs/` i obejmuje:
+- wymagania funkcjonalne i niefunkcjonalne: `requirements.md`
+- architektura systemu: `architecture.md`
 
 ## Workflow Git
 
-* praca na osobnych branchach
-* Pull Request jako sposób integracji z `main`
-* merge tylko po przejściu CI
+- praca na osobnych branchach
+- Pull Request jako sposób integracji z `main`
+- merge tylko po przejściu CI
 
