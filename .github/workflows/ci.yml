@@ -42,4 +42,10 @@ jobs:
               env:
                   ENV: ci
               run: |
+                  pytest -q --disable-warnings
+            - name: Run tests (user-service)
+              working-directory: services/user-service
+              env:
+                  ENV: ci
+              run: |
                   pytest -q --maxfail=1 --cov=app --cov-report=term-missing --cov-fail-under=60 --disable-warnings
