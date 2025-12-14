@@ -2,7 +2,20 @@ import os
 
 from fastapi import FastAPI
 
-app = FastAPI(title="LMS - User Service")
+from app.api.v1.auth import router as auth_router
+
+tags_metadata = [
+    {"name": "auth", "description": "Rejestracja, logowanie i tokeny JWT"},
+    {"name": "users", "description": "Operacje na użytkownikach (wymaga JWT)"},
+]
+
+app = FastAPI(
+    title="User Service",
+    version="0.1.0",
+    openapi_tags=tags_metadata,
+)
+
+app.include_router(auth_router, prefix="/auth", tags=["auth"])
 
 
 @app.get("/health")
