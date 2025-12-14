@@ -32,4 +32,4 @@ jobs:
 
             - name: Run tests
               run: |
-                  pytest -q --maxfail=1 --disable-warnings
+                  pytest -q --maxfail=1 --cov=app --cov-report=term-missing --cov-fail-under=60 --disable-warnings

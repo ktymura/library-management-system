@@ -4,6 +4,7 @@ from app.core.security import create_access_token, get_password_hash, verify_pas
 from app.deps import get_db
 from app.models.user import User
 from app.schemas.auth import Token, UserLogin
+from app.schemas.error import ErrorResponse
 from app.schemas.user import UserCreate, UserPublic
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.exc import IntegrityError
@@ -11,8 +12,16 @@ from sqlalchemy.orm import Session
 
 router = APIRouter()
 
+responses = {
+    401: {"model": ErrorResponse, "description": "Unauthorized"},
+    409: {"model": ErrorResponse, "description": "Conflict"},
+    422: {"model": ErrorResponse, "description": "Validation error"},
+}
 
-@router.post("/register", status_code=status.HTTP_201_CREATED, response_model=UserPublic)
+
+@router.post(
+    "/register", status_code=status.HTTP_201_CREATED, response_model=UserPublic, responses=responses
+)
 def register(payload: UserCreate, db: Annotated[Session, Depends(get_db)]) -> UserPublic:
     user = User(
         email=payload.email,
@@ -31,7 +40,11 @@ def register(payload: UserCreate, db: Annotated[Session, Depends(get_db)]) -> Us
     return user
 
 
-@router.post("/login", response_model=Token)
+@router.post(
+    "/login",
+    response_model=Token,
+    responses=responses,
+)
 def login(payload: UserLogin, db: Annotated[Session, Depends(get_db)]) -> Token:
     user = db.query(User).filter(User.email == payload.email).first()
     if not user or not verify_password(payload.password, user.hashed_password):

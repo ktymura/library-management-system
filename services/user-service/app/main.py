@@ -2,6 +2,7 @@ import os
 
 from fastapi import FastAPI
 
+from app.api.errors import install_error_handlers
 from app.api.v1.auth import router as auth_router
 from app.api.v1.users import router as users_router
 
@@ -16,6 +17,7 @@ app = FastAPI(
     openapi_tags=tags_metadata,
 )
 
+install_error_handlers(app)
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(users_router, prefix="/users", tags=["users"])
 
