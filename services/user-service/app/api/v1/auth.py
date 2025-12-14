@@ -1,8 +1,9 @@
 from typing import Annotated
 
-from app.core.security import get_password_hash
+from app.core.security import create_access_token, get_password_hash, verify_password
 from app.deps import get_db
 from app.models.user import User
+from app.schemas.auth import Token, UserLogin
 from app.schemas.user import UserCreate, UserPublic
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.exc import IntegrityError
@@ -28,3 +29,16 @@ def register(payload: UserCreate, db: Annotated[Session, Depends(get_db)]) -> Us
         ) from err
     db.refresh(user)
     return user
+
+
+@router.post("/login", response_model=Token)
+def login(payload: UserLogin, db: Annotated[Session, Depends(get_db)]) -> Token:
+    user = db.query(User).filter(User.email == payload.email).first()
+    if not user or not verify_password(payload.password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect email or password"
+        )
+
+    # sub = user.id (string)
+    access = create_access_token(subject=str(user.id))
+    return Token(access_token=access)
