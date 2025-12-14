@@ -6,7 +6,7 @@ on:
     pull_request:
 
 jobs:
-    test:
+    user-service:
         runs-on: ubuntu-latest
 
         steps:
@@ -16,13 +16,20 @@ jobs:
               with:
                   python-version: "3.11"
                   cache: "pip"
+                  cache-dependency-path: |
+                      services/user-service/requirements.txt
 
-            - name: Install dependencies
+            # Narzędzia repo (lint/format)
+            - name: Install tooling
               run: |
                   python -m pip install --upgrade pip
-                  pip install -r requirements.txt || true
-                  pip install fastapi uvicorn[standard] pytest httpx black ruff
-                  pip install alembic psycopg[binary]
+                  pip install ruff black
+
+            # Zależności serwisu (zawierają pytest, httpx, pytest-cov itd.)
+            - name: Install user-service deps
+              working-directory: services/user-service
+              run: |
+                  pip install -r requirements.txt
 
             - name: Ruff lint
               run: ruff check .
@@ -30,6 +37,9 @@ jobs:
             - name: Black format check
               run: black --check .
 
-            - name: Run tests
+            - name: Run tests (user-service)
+              working-directory: services/user-service
+              env:
+                  ENV: ci
               run: |
                   pytest -q --maxfail=1 --cov=app --cov-report=term-missing --cov-fail-under=60 --disable-warnings
