@@ -5,3 +5,5 @@ alembic
 pydantic==2.9.2
 pydantic-settings==2.6.1
 psycopg[binary]==3.2.3
+alembic
+SQLAlchemy>=2.0
