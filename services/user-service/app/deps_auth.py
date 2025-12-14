@@ -8,13 +8,19 @@ from app.core.security import decode_token
 from app.deps import get_db
 from app.models.user import User
 
-bearer_scheme = HTTPBearer(auto_error=True)
+bearer_scheme = HTTPBearer(auto_error=False)
 
 
 def get_current_user(
-    creds: Annotated[HTTPAuthorizationCredentials, Depends(bearer_scheme)],
+    creds: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer_scheme)],
     db: Annotated[Session, Depends(get_db)],
 ) -> User:
+    if creds is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+        )
+
     token = creds.credentials
     try:
         payload = decode_token(token)
