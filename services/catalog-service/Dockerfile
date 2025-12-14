@@ -10,7 +10,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Potem kod
-COPY app ./app
+COPY . .
 
 # Zmienne środowiskowe
 ENV PYTHONUNBUFFERED=1

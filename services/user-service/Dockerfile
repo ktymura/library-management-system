@@ -10,11 +10,12 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Potem kod
-COPY app ./app
+COPY . .
 
 # Zmienne środowiskowe
 ENV PYTHONUNBUFFERED=1
 ENV PORT=8000
+ENV PYTHONPATH=/app
 
 # Domyślne wejście: uvicorn
 CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT}"]
