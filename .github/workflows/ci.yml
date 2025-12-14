@@ -25,7 +25,7 @@ jobs:
                   python -m pip install --upgrade pip
                   pip install ruff black
 
-            # Zależności serwisu (zawierają pytest, httpx, pytest-cov itd.)
+            # Zależności serwisu (pytest, httpx, pytest-cov muszą być w requirements.txt)
             - name: Install user-service deps
               working-directory: services/user-service
               run: |
@@ -41,11 +41,6 @@ jobs:
               working-directory: services/user-service
               env:
                   ENV: ci
-              run: |
-                  pytest -q --disable-warnings
-            - name: Run tests (user-service)
-              working-directory: services/user-service
-              env:
-                  ENV: ci
+                  PYTHONPATH: . # <-- kluczowe, by `import app` działał na runnerze
               run: |
                   pytest -q --maxfail=1 --cov=app --cov-report=term-missing --cov-fail-under=60 --disable-warnings
