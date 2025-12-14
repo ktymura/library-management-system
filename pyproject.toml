@@ -4,6 +4,10 @@ target-version = ["py311"]
 
 [tool.ruff]
 line-length = 100
+exclude = [
+  "alembic",
+  "alembic/versions",
+]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -15,3 +19,7 @@ ignore = ["E501"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+norecursedirs = [
+  "alembic",
+  "alembic/versions",
+]
