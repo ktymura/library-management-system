@@ -64,6 +64,9 @@ services:
             DATABASE_URL: "postgresql://${CATALOG_DB_USER}:${CATALOG_DB_PASSWORD}@db:5432/${CATALOG_DB_NAME}"
         ports:
             - "${CATALOG_SERVICE_PORT}:8000"
+        env_file:
+            - ./services/user-service/.env
+            - ./.env
         depends_on:
             db:
                 condition: service_healthy

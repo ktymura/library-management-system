@@ -95,7 +95,7 @@ class Settings(BaseSettings):
             return self
 
         raise ValueError(
-            "DATABASE_URL is not set and cannot be constructed from USER_DB_* variables"
+            "DATABASE_URL is not set and cannot be constructed from CATALOG_DB_* variables"
         )
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
