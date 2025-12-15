@@ -32,7 +32,7 @@ class UserCreate(BaseModel):
     def password_strength(cls, v: str) -> str:
         # Limit bcrypt dotyczy bajtów; dla zwykłych ASCII == len(str)
         if len(v.encode("utf-8")) > PW_MAX:
-            raise ValueError("Password is too long (max 72 bytes for bcrypt).")
+            raise ValueError("Password is too long.")
         rules = [
             (_re_lower.search(v), "lowercase letter"),
             (_re_upper.search(v), "uppercase letter"),

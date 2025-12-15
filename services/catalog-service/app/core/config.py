@@ -39,6 +39,12 @@ class Settings(BaseSettings):
     # DB
     DATABASE_URL: str | None = None
 
+    # JWT
+    JWT_SECRET: str
+    JWT_ALG: str = "HS256"
+    JWT_ISSUER: str | None = None
+    JWT_AUDIENCE: str | None = None
+
     ENV: str = "local"
 
     # Load env vars from repo root first (if found), then service-level overrides.

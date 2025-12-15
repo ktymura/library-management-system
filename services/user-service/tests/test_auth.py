@@ -1,3 +1,4 @@
+from app.core.config import settings
 from app.core.security import decode_token
 from app.models.user import User, UserRole
 from sqlalchemy.orm import Session
@@ -29,6 +30,11 @@ def test_login_success_and_token(client):
     # token powinien się dać zdekodować
     payload = decode_token(tok)
     assert "sub" in payload
+    assert payload.get("role") == UserRole.READER.value
+    if settings.JWT_ISSUER:
+        assert payload.get("iss") == settings.JWT_ISSUER
+    if settings.JWT_AUDIENCE:
+        assert payload.get("aud") == settings.JWT_AUDIENCE
 
 
 def test_login_invalid_credentials(client):

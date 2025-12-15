@@ -53,5 +53,5 @@ def login(payload: UserLogin, db: Annotated[Session, Depends(get_db)]) -> Token:
         )
 
     # sub = user.id (string)
-    access = create_access_token(subject=str(user.id))
+    access = create_access_token(subject=str(user.id), role=user.role.value)
     return Token(access_token=access)
