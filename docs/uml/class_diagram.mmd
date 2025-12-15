@@ -1,0 +1,21 @@
+classDiagram
+
+class User {
+    +int id
+    +string email
+    +string hashed_password
+    +string full_name
+    +bool is_active
+    +datetime created_at
+    +datetime updated_at
+    +UserRole role
+}
+
+class UserRole {
+    <<enumeration>>
+    READER
+    LIBRARIAN
+    ADMIN
+}
+
+User --> UserRole : role

@@ -1,0 +1,96 @@
+flowchart LR
+  %% Aktorzy
+  READER[[READER]]
+  LIBRARIAN[[LIBRARIAN]]
+  ADMIN[[ADMIN]]
+
+  subgraph LMS [Library Management System]
+    direction TB
+
+    %% READER
+    UC_R_REG(Rejestracja konta)
+    UC_R_LOGIN(Logowanie)
+    UC_R_BROWSE(Przeglądanie katalogu)
+    UC_R_SEARCH(Wyszukiwanie książek)
+    UC_R_DETAILS(Podgląd szczegółów tytułu)
+    UC_R_RESERVE(Rezerwacja tytułu)
+    UC_R_MYLOANS(Podgląd moich wypożyczeń)
+    UC_R_RENEW(Prośba o prolongatę)
+    UC_R_CANCELRES(Anulowanie rezerwacji)
+    UC_R_PAYFEE(Opłacenie kary)
+    UC_R_PROFILE(Aktualizacja profilu)
+
+    %% LIBRARIAN
+    UC_L_CREATE(Utworzenie/aktywacja konta READER)
+    UC_L_VERIFY(Weryfikacja członkostwa)
+    UC_L_CHECKOUT(Wypożyczenie egzemplarza)
+    UC_L_CHECKIN(Zwrot egzemplarza)
+    UC_L_RENEW(Prolongata w imieniu READER)
+    UC_L_HOLDS(Obsługa rezerwacji/kolejki)
+    UC_L_LOST(Zgłoszenie zagubienia/uszkodzenia)
+    UC_L_FEE("Pobranie/umorzenie kary (offline)")
+    UC_L_CATALOG(Zarządzanie katalogiem)
+    UC_L_REPORTS(Raporty operacyjne)
+
+    %% ADMIN
+    UC_A_USERS(Zarządzanie użytkownikami i rolami)
+    UC_A_POLICIES(Konfiguracja polityk)
+    UC_A_NOTIF(Integracje i powiadomienia)
+    UC_A_AUDIT(Audyt i logi)
+    UC_A_BACKUP(Kopie zapasowe/odtworzenie)
+    UC_A_REPORTS(Raporty administracyjne)
+
+    %% Wspólne/techniczne "include"
+    UC_AUTH[Uwierzytelnienie]
+    UC_AVAIL[Sprawdzenie dostępności egzemplarza]
+    UC_CALCFEE[Wyliczenie kary]
+    UC_HOLDCHK[Sprawdzenie blokad/rez. na tytuł]
+    UC_PAYPROC[Przetworzenie płatności]
+
+  end
+
+  %% Powiązania aktorów
+  READER --- UC_R_REG
+  READER --- UC_R_LOGIN
+  READER --- UC_R_BROWSE
+  READER --- UC_R_SEARCH
+  READER --- UC_R_DETAILS
+  READER --- UC_R_RESERVE
+  READER --- UC_R_MYLOANS
+  READER --- UC_R_RENEW
+  READER --- UC_R_CANCELRES
+  READER --- UC_R_PAYFEE
+  READER --- UC_R_PROFILE
+
+  LIBRARIAN --- UC_L_CREATE
+  LIBRARIAN --- UC_L_VERIFY
+  LIBRARIAN --- UC_L_CHECKOUT
+  LIBRARIAN --- UC_L_CHECKIN
+  LIBRARIAN --- UC_L_RENEW
+  LIBRARIAN --- UC_L_HOLDS
+  LIBRARIAN --- UC_L_LOST
+  LIBRARIAN --- UC_L_FEE
+  LIBRARIAN --- UC_L_CATALOG
+  LIBRARIAN --- UC_L_REPORTS
+
+  ADMIN --- UC_A_USERS
+  ADMIN --- UC_A_POLICIES
+  ADMIN --- UC_A_NOTIF
+  ADMIN --- UC_A_AUDIT
+  ADMIN --- UC_A_BACKUP
+  ADMIN --- UC_A_REPORTS
+
+  %% «include» (linie przerywane)
+  UC_R_LOGIN -. «include» .-> UC_AUTH
+  UC_L_CHECKOUT -. «include» .-> UC_L_VERIFY
+  UC_L_CHECKOUT -. «include» .-> UC_AVAIL
+  UC_R_RESERVE -. «include» .-> UC_AVAIL
+  UC_L_CHECKIN -. «include» .-> UC_CALCFEE
+  UC_R_RENEW -. «include» .-> UC_HOLDCHK
+  UC_L_RENEW -. «include» .-> UC_HOLDCHK
+  UC_R_PAYFEE -. «include» .-> UC_PAYPROC
+
+  %% «extend»
+  UC_L_CHECKIN -. «extend: przeterminowanie» .-> UC_CALCFEE
+  UC_L_CHECKOUT -. «extend: obejście limitu» .-> UC_L_VERIFY
+  UC_L_CHECKIN -. «extend: zgubiono/uszkodzono» .-> UC_L_LOST
