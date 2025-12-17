@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from alembic.config import Config
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import Session
@@ -18,6 +19,8 @@ os.environ["DATABASE_URL"] = "sqlite+pysqlite:///:memory:"
 
 from app.deps import get_db  # noqa: E402
 from app.main import app  # noqa: E402
+
+alembic_cfg = Config(str(CATALOG_ROOT / "alembic.ini"))
 
 # ENGINE (JEDNA CONNECTION NA CAŁĄ SESJĘ)
 
