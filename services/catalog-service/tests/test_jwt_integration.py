@@ -13,13 +13,17 @@ def make_token(role: str) -> str:
 
 
 def test_happy_path_add_copy_and_list(client: TestClient):
+    token = make_token("LIBRARIAN")
     # 1) autor
-    r = client.post("/authors", json={"full_name": "Ursula K. Le Guin"})
+    r = client.post(
+        "/authors",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"full_name": "Ursula K. Le Guin"},
+    )
     assert r.status_code == 201, r.text
     author_id = r.json()["id"]
 
     # 2) książka (wymaga LIBRARIAN)
-    token = make_token("LIBRARIAN")
     r = client.post(
         "/books",
         headers={"Authorization": f"Bearer {token}"},

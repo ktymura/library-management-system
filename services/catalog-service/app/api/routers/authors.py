@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
+from app.api.security import require_librarian_or_admin
 from app.deps import get_db
 from app.repositories import AuthorRepository
 from app.schemas import AuthorCreate, AuthorRead
@@ -11,7 +12,12 @@ from sqlalchemy.orm import Session
 router = APIRouter(prefix="/authors", tags=["Authors"])
 
 
-@router.post("", response_model=AuthorRead, status_code=201)
+@router.post(
+    "",
+    response_model=AuthorRead,
+    status_code=201,
+    dependencies=[Depends(require_librarian_or_admin)],
+)
 def create_author(payload: AuthorCreate, db: Annotated[Session, Depends(get_db)]):
     repo = AuthorRepository(db)
     a = repo.create(full_name=payload.full_name)

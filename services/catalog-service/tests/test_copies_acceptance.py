@@ -13,12 +13,15 @@ def make_token(role: str) -> str:
 
 
 def test_given_book_and_copy_when_add_copy_then_get_books_id_copies_returns_it(client: TestClient):
+    token = make_token("LIBRARIAN")
     # author
-    r = client.post("/authors", json={"full_name": "Ursula K. Le Guin"})
+    r = client.post(
+        "/authors",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"full_name": "Ursula K. Le Guin"},
+    )
     assert r.status_code == 201, r.text
     author_id = r.json()["id"]
-
-    token = make_token("LIBRARIAN")
 
     # book
     r = client.post(

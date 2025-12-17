@@ -13,12 +13,13 @@ def make_token(role: str) -> str:
 
 
 def test_duplicate_isbn_returns_409(client: TestClient):
+    token = make_token("LIBRARIAN")
     # author
-    r = client.post("/authors", json={"full_name": "A"})
+    r = client.post(
+        "/authors", headers={"Authorization": f"Bearer {token}"}, json={"full_name": "A"}
+    )
     assert r.status_code == 201, r.text
     author_id = r.json()["id"]
-
-    token = make_token("LIBRARIAN")
 
     payload = {
         "title": "B1",
@@ -40,11 +41,13 @@ def test_duplicate_isbn_returns_409(client: TestClient):
 
 
 def test_duplicate_inventory_code_returns_409(client: TestClient):
-    r = client.post("/authors", json={"full_name": "A"})
+    token = make_token("LIBRARIAN")
+    r = client.post(
+        "/authors", headers={"Authorization": f"Bearer {token}"}, json={"full_name": "A"}
+    )
     assert r.status_code == 201, r.text
     author_id = r.json()["id"]
 
-    token = make_token("LIBRARIAN")
     r = client.post(
         "/books",
         headers={"Authorization": f"Bearer {token}"},
