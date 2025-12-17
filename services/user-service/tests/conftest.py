@@ -45,13 +45,12 @@ def connection():
 
 @pytest.fixture(scope="session", autouse=True)
 def apply_migrations(connection):
-    from alembic import command
-    from alembic.config import Config
+    from alembic.config import Config, command
 
-    alembic_cfg = Config(str(CATALOG_ROOT / "alembic.ini"))
-
+    alembic_cfg = Config()
+    alembic_cfg.set_main_option("script_location", str(CATALOG_ROOT / "alembic"))
+    alembic_cfg.set_main_option("sqlalchemy.url", "sqlite+pysqlite:///:memory:")
     alembic_cfg.attributes["connection"] = connection
-
     command.upgrade(alembic_cfg, "head")
 
 
