@@ -9,6 +9,10 @@ class AuthorCreate(BaseModel):
     full_name: str
 
 
+class AuthorUpdate(BaseModel):
+    full_name: str | None = None
+
+
 class AuthorRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

@@ -28,17 +28,18 @@ Projekt zrealizowany jest w architekturze mikroserwisowej. Każdy serwis:
   - `/health`,
 - wykorzystuje FastAPI oraz SQLAlchemy + Alembic.
 
-
 #### catalog-service
 
 - odpowiedzialny za katalog książek i egzemplarzy,
 - zarządza encjami: **Author**, **Book**, **Copy**,
 - realizuje pełny CRUD dla książek oraz zarządzanie egzemplarzami,
+- umożliwia wyszukiwanie książek po tytule lub autorze (filtrowanie na poziomie bazy danych),
 - egzekwuje autoryzację na podstawie JWT i ról użytkowników,
 - weryfikuje podpis, issuer (`iss`) oraz audience (`aud`) tokenu JWT,
 - udostępnia endpointy:
     - `/authors`,
     - `/books`,
+    - `/books/search`,
     - `/books/{id}/copies`,
     - `/health`,
 - wykorzystuje FastAPI, SQLAlchemy 2.0 oraz Alembic.
