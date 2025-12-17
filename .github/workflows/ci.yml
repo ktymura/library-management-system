@@ -69,7 +69,7 @@ jobs:
                   pip install ruff black
 
             # Zależności serwisu
-            - name: Install user-service deps
+            - name: Install catalog-service deps
               working-directory: services/catalog-service
               run: |
                   pip install -r requirements.txt
@@ -80,7 +80,7 @@ jobs:
             - name: Black format check
               run: black --check .
 
-            - name: Run tests (-service)
+            - name: Run tests (catalog-service)
               working-directory: services/catalog-service
               env:
                   PYTHONPATH: .
