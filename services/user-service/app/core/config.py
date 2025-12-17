@@ -43,6 +43,8 @@ class Settings(BaseSettings):
     JWT_SECRET: str
     JWT_ALG: str = "HS256"
     JWT_EXPIRES_MIN: int = 60  # czas ważności access tokenu
+    JWT_ISSUER: str | None = None
+    JWT_AUDIENCE: str | None = None
 
     # meta
     ENV: str = "dev"

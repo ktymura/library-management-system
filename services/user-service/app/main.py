@@ -19,7 +19,7 @@ app = FastAPI(
 
 install_error_handlers(app)
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
-app.include_router(users_router, prefix="/users", tags=["users"])
+app.include_router(users_router, tags=["users"])
 
 
 @app.get("/health")
