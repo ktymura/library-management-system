@@ -5,8 +5,7 @@ from typing import Annotated
 from app.api.security import require_librarian_or_admin
 from app.deps import get_db
 from app.repositories import CopyRepository
-from app.schemas import CopyCreate, CopyRead
-from app.schemas.error import ErrorResponse
+from app.schemas import CopyCreate, CopyRead, ErrorResponse
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 

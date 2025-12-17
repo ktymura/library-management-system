@@ -5,8 +5,7 @@ from typing import Annotated
 from app.api.security import require_librarian_or_admin
 from app.deps import get_db
 from app.repositories import BookRepository
-from app.schemas import BookCreate, BookRead, BookUpdate
-from app.schemas.error import ErrorResponse
+from app.schemas import BookCreate, BookRead, BookUpdate, ErrorResponse
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -41,8 +40,8 @@ def create_book(payload: BookCreate, db: Annotated[Session, Depends(get_db)]):
 
 
 @router.get(
-    "/{book_id}",
-    response_model=BookRead,
+    "",
+    response_model=list[BookRead],
     responses={**RESP_404},
 )
 def list_books(
