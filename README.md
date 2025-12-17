@@ -44,12 +44,7 @@ Po uruchomieniu systemu migracje baz danych wykonywane są automatycznie przez A
 - migracje bazy danych (Alembic)
 - pełna dokumentacja API w Swagger (OpenAPI)
 
-Swagger UI dostępny pod:
-
-```
-http://localhost:8001/docs
-
-```
+Swagger UI dostępny pod: http://localhost:8001/docs
 
 ### Catalog Service
 
@@ -74,12 +69,7 @@ http://localhost:8001/docs
 - migracje bazy danych (Alembic),
 - dokumentacja API w Swagger (OpenAPI).
 
-Swagger UI dostępny pod:
-
-```
-http://localhost:8002/docs
-
-```
+Swagger UI dostępny pod: http://localhost:8002/docs
 
 ## Komponenty systemu
 
