@@ -39,11 +39,14 @@ Admin może pobierać statystyki, listy użytkowników, blokować konta itp. (op
 ### F-13 - Integracja między serwisami (User-Service <-> Catalog-Service)
 Serwisy komunikują się poprzez REST oraz RabbitMQ (np. eventy wypożyczeń).
 
-### F-14 - Endpointy zdrowia /health
+### F-14 - Endpointy zdrowia (/health)
 Każdy serwis wystawia publiczny endpoint do monitorowania stanu.
 
 ### F-15 - Obsługa błędów API
 System zwraca czytelne komunikaty błędów i kody HTTP.
+
+### F-16 - Walidacja dostępności egzemplarza
+System musi weryfikować dostępność egzemplarza książki przed utworzeniem wypożyczenia i uniemożliwić wypożyczenie egzemplarza oznaczonego jako niedostępny, zwracając odpowiedni kod HTTP oraz czytelny komunikat błędu.
 
 # Wymagania niefunkcjonalne
 
@@ -77,11 +80,17 @@ Serwisy muszą generować logi oraz udostępniać healthcheck.
 ### N-10 - Testy automatyczne
 System musi mieć pokrycie testami jednostkowymi kluczowych funkcji.
 
-### N-11 - Dokumentacja
-Każdy serwis musi posiadać dokumentację API (Swagger/OpenAPI).
+### N-11 - Dokumentacja API
+Każdy serwis musi posiadać dokumentację API (Swagger).
 
 ### N-12 - Obsługa błędów i odporność
 Serwisy muszą obsługiwać sytuacje wyjątkowe i zapewniać minimalne ryzyko awarii.
+
+### N-13 - Indeksy wyszukiwania (GIN)
+System musi wykorzystywać indeksy typu GIN w bazie danych (PostgreSQL) dla pól wykorzystywanych w wyszukiwaniu tekstowym (np. tytuł książki, autor), w celu zapewnienia wydajnego i skalowalnego przeszukiwania katalogu.
+
+### N-14 - Testy integracyjne z DB
+System musi posiadać testy integracyjne uruchamiane na rzeczywistej instancji bazy danych (np. PostgreSQL w Dockerze), weryfikujące poprawność działania repozytoriów, migracji Alembic oraz integracji warstwy API z bazą danych.
 
 # Changelog
 
@@ -89,3 +98,6 @@ Serwisy muszą obsługiwać sytuacje wyjątkowe i zapewniać minimalne ryzyko aw
 - Utworzono wstępny zestaw wymagań funkcjonalnych i niefunkcjonalnych.
 - Przygotowano strukturę pliku `requirements.md`.
 - Dodano wersjonowanie i changelog.
+
+### [v0.2] - 2025-12-17
+- Dodano wymagania F-16, N-13, N-14.
