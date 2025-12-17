@@ -1,4 +1,4 @@
-from .author import AuthorCreate, AuthorRead
+from .author import AuthorCreate, AuthorRead, AuthorUpdate
 from .book import BookCreate, BookRead, BookUpdate
 from .copy import CopyCreate, CopyRead
 from .error import ErrorDetail, ErrorResponse
@@ -6,6 +6,7 @@ from .error import ErrorDetail, ErrorResponse
 __all__ = [
     "AuthorCreate",
     "AuthorRead",
+    "AuthorUpdate",
     "BookCreate",
     "BookUpdate",
     "BookRead",

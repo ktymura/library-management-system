@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.exceptions import AlreadyExists, NotFound
-from app.models import Book
+from app.models import Author, Book
 from app.repositories.authors import AuthorRepository
 
 
@@ -64,6 +64,31 @@ class BookRepository:
         if author_id:
             stmt = stmt.where(Book.author_id == author_id)
         stmt = stmt.order_by(Book.id).limit(limit).offset(offset)
+        return self.db.execute(stmt).scalars().all()
+
+    def search(
+        self,
+        *,
+        query: str,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> Sequence[Book]:
+        q = query.strip()
+
+        stmt = (
+            select(Book)
+            .join(Author, Book.author_id == Author.id)
+            .where(
+                or_(
+                    Book.title.ilike(f"%{q}%"),
+                    Author.full_name.ilike(f"%{q}%"),
+                )
+            )
+            .distinct()
+            .order_by(Book.id)
+            .limit(limit)
+            .offset(offset)
+        )
         return self.db.execute(stmt).scalars().all()
 
     # UPDATE (partial)

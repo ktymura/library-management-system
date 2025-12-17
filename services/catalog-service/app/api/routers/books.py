@@ -6,7 +6,7 @@ from app.api.security import require_librarian_or_admin
 from app.deps import get_db
 from app.repositories import BookRepository
 from app.schemas import BookCreate, BookRead, BookUpdate, ErrorResponse
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 RESP_401_403 = {
@@ -54,6 +54,29 @@ def list_books(
 ):
     repo = BookRepository(db)
     return repo.list(title=title, isbn=isbn, author_id=author_id, limit=limit, offset=offset)
+
+
+@router.get(
+    "/search",
+    response_model=list[BookRead],
+    responses={
+        422: {"model": ErrorResponse, "description": "Validation error (empty query)"},
+    },
+)
+def search_books(
+    db: Annotated[Session, Depends(get_db)],
+    query: str = Query(..., min_length=1, description="Search by book title or author name"),
+    limit: int = 50,
+    offset: int = 0,
+):
+    repo = BookRepository(db)
+    q = query.strip()
+    if not q:
+        from fastapi import HTTPException
+
+        raise HTTPException(status_code=422, detail="query must not be blank")
+
+    return repo.search(query=q, limit=limit, offset=offset)
 
 
 @router.get(

@@ -59,6 +59,8 @@ Swagger UI dostępny pod: http://localhost:8001/docs
   - `GET /books/{id}`,
   - `PATCH /books/{id}`,
   - `DELETE /books/{id}`,
+- wyszukiwanie książek:
+  - `GET /books/search?query=` (wyszukiwanie po tytule lub autorze),
 - zarządzanie egzemplarzami książek:
   - `POST /books/{id}/copies`,
   - `GET /books/{id}/copies`,
@@ -71,6 +73,7 @@ Swagger UI dostępny pod: http://localhost:8001/docs
 
 Swagger UI dostępny pod: http://localhost:8002/docs
 
+
 ## Komponenty systemu
 
 - **user-service**
@@ -78,6 +81,7 @@ Swagger UI dostępny pod: http://localhost:8002/docs
     - FastAPI, SQLAlchemy, Alembic
 - **catalog-service**
     - obsługa katalogu książek i egzemplarzy (Author / Book / Copy),
+    - wyszukiwanie książek po tytule lub autorze,
     - autoryzacja JWT (Bearer),
     - weryfikacja ról użytkowników,
     - FastAPI, SQLAlchemy 2.0, Alembic

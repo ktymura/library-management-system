@@ -5,7 +5,7 @@ from typing import Annotated
 from app.api.security import require_librarian_or_admin
 from app.deps import get_db
 from app.repositories import AuthorRepository
-from app.schemas import AuthorCreate, AuthorRead
+from app.schemas import AuthorCreate, AuthorRead, AuthorUpdate
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -38,4 +38,20 @@ def list_authors(
 def get_author(author_id: int, db: Annotated[Session, Depends(get_db)]):
     repo = AuthorRepository(db)
     a = repo.require(author_id)
+    return a
+
+
+@router.patch(
+    "/{author_id}",
+    response_model=AuthorRead,
+    dependencies=[Depends(require_librarian_or_admin)],
+)
+def update_author(author_id: int, payload: AuthorUpdate, db: Annotated[Session, Depends(get_db)]):
+    repo = AuthorRepository(db)
+    a = repo.update_partial(
+        author_id,
+        full_name=payload.full_name,
+    )
+    db.commit()
+    db.refresh(a)
     return a
