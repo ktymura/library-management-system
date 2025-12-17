@@ -19,6 +19,10 @@ class UserRole(str, Enum):
     ADMIN = "ADMIN"
 
 
+class RoleUpdate(BaseModel):
+    role: UserRole
+
+
 class UserCreate(BaseModel):
     email: EmailStr
     password: str = Field(

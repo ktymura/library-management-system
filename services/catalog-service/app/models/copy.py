@@ -40,7 +40,6 @@ class Copy(Base):
     book_id: Mapped[int] = mapped_column(
         ForeignKey("books.id", ondelete="CASCADE"),
         nullable=False,
-        index=True,
     )
 
     created_at: Mapped[datetime] = mapped_column(nullable=False, server_default=func.now())

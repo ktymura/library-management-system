@@ -31,28 +31,44 @@ Projekt zrealizowany jest w architekturze mikroserwisowej. Każdy serwis:
 
 #### catalog-service
 
-- odpowiedzialny za katalog książek,
-- udostępnia endpoint `/health`,
-- wykorzystuje FastAPI.
+- odpowiedzialny za katalog książek i egzemplarzy,
+- zarządza encjami: **Author**, **Book**, **Copy**,
+- realizuje pełny CRUD dla książek oraz zarządzanie egzemplarzami,
+- egzekwuje autoryzację na podstawie JWT i ról użytkowników,
+- weryfikuje podpis, issuer (`iss`) oraz audience (`aud`) tokenu JWT,
+- udostępnia endpointy:
+    - `/authors`,
+    - `/books`,
+    - `/books/{id}/copies`,
+    - `/health`,
+- wykorzystuje FastAPI, SQLAlchemy 2.0 oraz Alembic.
 
 ## 2.2 Autoryzacja i bezpieczeństwo
 
 System wykorzystuje mechanizm autoryzacji oparty o tokeny JWT (JSON Web Token).
 
-- token JWT generowany jest podczas logowania użytkownika,
+- token JWT generowany jest przez **user-service** podczas logowania użytkownika,
 - token przekazywany jest w nagłówku `Authorization: Bearer <token>`,
-- weryfikacja tokenu odbywa się po stronie `user-service`,
-- endpointy chronione wymagają poprawnego i nieprzeterminowanego tokenu.
+- **catalog-service weryfikuje token lokalnie** (bez odpytywania user-service):
+    - poprawność podpisu,
+    - czas ważności (`exp`),
+    - wystawcę (`iss`),
+    - odbiorcę (`aud`),
+- token zawiera claim `role`, który determinuje dostęp do endpointów.
 
 ### Role użytkowników
 
 Każdy użytkownik posiada przypisaną rolę:
 
-- `READER` – rola domyślna,
-- `LIBRARIAN`,
-- `ADMIN`.
+- `READER` – rola domyślna (tylko odczyt),
+- `LIBRARIAN` – zarządzanie katalogiem i egzemplarzami,
+- `ADMIN` – pełne uprawnienia administracyjne.
 
-Dostęp do wybranych endpointów może być ograniczony na podstawie roli użytkownika.
+Przykłady ograniczeń:
+
+- `POST /books` – wymaga roli `LIBRARIAN` lub `ADMIN`,
+- `POST /books/{id}/copies` – wymaga roli `LIBRARIAN` lub `ADMIN`,
+- endpointy `GET` dostępne są dla wszystkich ról.
 
 
 ## 3. Baza danych
@@ -90,7 +106,11 @@ Dla `user-service` migrowane są m.in.:
 - tabela `users`,
 - role użytkowników,
 - znaczniki czasu utworzenia i modyfikacji rekordów.
-
+Dla catalog-service migrowane są m.in.:
+- tabela authors,
+- tabela books (ISBN, relacja do autorów, metadane publikacji),
+- tabela copies (egzemplarze książek),
+- typ ENUM copy_status (AVAILABLE, BORROWED, LOST, DAMAGED).
 
 ## 4. Docker Compose
 
@@ -112,6 +132,7 @@ Plik `.env.example` zawiera przykładową konfigurację:
 
 - dane dostępowe do bazy danych,
 - porty serwisów,
+- dane JWT (JWT_SECRET, JWT_ISSUER, JWT_AUDIENCE),
 - dane logowania do pgAdmin.
 
 
@@ -134,16 +155,19 @@ Projekt wykorzystuje GitHub Actions:
 - walidację Pull Requestów przed merge do `main`.
 
 
-
 ## 8. Status
 
 Zrealizowane funkcjonalności:
 
 - system rejestracji i logowania użytkowników,
-- autoryzacja oparta o JWT,
-- obsługa ról użytkowników,
-- migracje bazy danych (Alembic),
-- testy automatyczne uruchamiane w CI.
+- autoryzacja oparta o JWT (HS256),
+- weryfikacja `iss` i `aud` w mikroserwisach,
+- obsługa ról użytkowników (READER / LIBRARIAN / ADMIN),
+- katalog książek i egzemplarzy (Author / Book / Copy),
+- migracje bazy danych (Alembic) w każdym serwisie,
+- pełny CRUD książek oraz zarządzanie egzemplarzami,
+- testy jednostkowe i integracyjne (pytest),
+- automatyczne uruchamianie testów w CI,
+- dokumentacja OpenAPI z obsługą Bearer Auth.
 
-Projekt gotowy do dalszej rozbudowy funkcjonalnej.
-
+Projekt posiada stabilny fundament architektoniczny i jest gotowy do dalszej rozbudowy funkcjonalnej.

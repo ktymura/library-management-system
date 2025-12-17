@@ -28,7 +28,7 @@ elif env_candidates:
 # service-level .env (services/user-service/.env) if present
 service_dir = None
 for p in _HERE.parents:
-    if p.name == "user-service":
+    if p.name == "catalog-service":
         service_dir = p
         break
 if service_dir and (service_dir / ".env").exists():
@@ -45,7 +45,7 @@ class Settings(BaseSettings):
     JWT_ISSUER: str | None = None
     JWT_AUDIENCE: str | None = None
 
-    ENV: str = "local"
+    ENV: str = "dev"
 
     # Load env vars from repo root first (if found), then service-level overrides.
     model_config = SettingsConfigDict(
@@ -87,6 +87,7 @@ class Settings(BaseSettings):
         db_name = os.getenv("CATALOG_DB_NAME", db_name)
         db_host = os.getenv("DB_HOST", db_host or "localhost")
         db_port = os.getenv("POSTGRES_PORT", db_port or "5432")
+
         if all([db_user, db_pass, db_name]):
             self.DATABASE_URL = (
                 f"postgresql+psycopg://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}"
@@ -103,8 +104,6 @@ class Settings(BaseSettings):
         raise ValueError(
             "DATABASE_URL is not set and cannot be constructed from CATALOG_DB_* variables"
         )
-
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
 
 settings = Settings()

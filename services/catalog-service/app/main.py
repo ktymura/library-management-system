@@ -8,7 +8,7 @@ from app.api.errors import domain_error_handler
 from app.api.routers import authors_router, books_router, copies_router
 from app.exceptions import DomainError
 
-app = FastAPI(title="LMS - Catalog Service")
+app = FastAPI(title="Catalog Service")
 # Routers
 app.include_router(authors_router)
 app.include_router(books_router)

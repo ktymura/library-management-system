@@ -5,7 +5,7 @@ from app.deps import get_db
 from app.models.user import User
 from app.schemas.auth import Token, UserLogin
 from app.schemas.error import ErrorResponse
-from app.schemas.user import UserCreate, UserPublic
+from app.schemas.user import UserCreate, UserPublic, UserRole
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -27,6 +27,7 @@ def register(payload: UserCreate, db: Annotated[Session, Depends(get_db)]) -> Us
         email=payload.email,
         hashed_password=get_password_hash(payload.password),
         is_active=True,
+        role=UserRole.READER,
     )
     db.add(user)
     try:

@@ -24,7 +24,6 @@ class Book(Base):
     author_id: Mapped[int] = mapped_column(
         ForeignKey("authors.id", ondelete="RESTRICT"),
         nullable=False,
-        index=True,
     )
 
     created_at: Mapped[datetime] = mapped_column(nullable=False, server_default=func.now())

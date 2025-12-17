@@ -43,7 +43,50 @@ jobs:
                   PYTHONPATH: .
                   ENV: ci
                   # Settings required by app.core.config during import:
-                  JWT_SECRET: "testsecret"
+                  JWT_SECRET: "supersecret"
+                  JWT_ALG: "HS256"
+                  JWT_EXPIRES_MIN: "60"
+                  DATABASE_URL: "sqlite+pysqlite:///:memory:"
+              run: |
+                  pytest -q --maxfail=1 --cov=app --cov-report=term-missing --cov-fail-under=60 --disable-warnings
+    catalog-service:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: actions/setup-python@v5
+              with:
+                  python-version: "3.11"
+                  cache: "pip"
+                  cache-dependency-path: |
+                      services/catalog-service/requirements.txt
+
+            # Narzędzia repo (lint/format)
+            - name: Install tooling
+              run: |
+                  python -m pip install --upgrade pip
+                  pip install ruff black
+
+            # Zależności serwisu
+            - name: Install user-service deps
+              working-directory: services/catalog-service
+              run: |
+                  pip install -r requirements.txt
+
+            - name: Ruff lint
+              run: ruff check .
+
+            - name: Black format check
+              run: black --check .
+
+            - name: Run tests (-service)
+              working-directory: services/catalog-service
+              env:
+                  PYTHONPATH: .
+                  ENV: ci
+                  # Settings required by app.core.config during import:
+                  JWT_SECRET: "supersecret"
                   JWT_ALG: "HS256"
                   JWT_EXPIRES_MIN: "60"
                   DATABASE_URL: "sqlite+pysqlite:///:memory:"
