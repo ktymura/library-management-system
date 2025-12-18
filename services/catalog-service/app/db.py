@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
-from sqlalchemy.pool import NullPool
+from sqlalchemy.pool import StaticPool
 
 from app.core.config import settings
 
@@ -9,16 +9,17 @@ class Base(DeclarativeBase):
     pass
 
 
-DATABASE_URL = settings.DATABASE_URL
+# SQLite in-memory wymaga StaticPool + check_same_thread
+if settings.DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(
+        settings.DATABASE_URL,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+        future=True,
+    )
+# Postgres: zwykły engine
+else:
+    engine = create_engine(settings.DATABASE_URL, future=True)
 
-engine = create_engine(
-    DATABASE_URL,
-    pool_pre_ping=True,
-    poolclass=NullPool if settings.ENV == "test" else None,
-)
 
-SessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine,
-)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
