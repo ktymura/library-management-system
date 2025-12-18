@@ -9,6 +9,21 @@ jobs:
     user-service:
         runs-on: ubuntu-latest
 
+        services:
+            postgres:
+                image: postgres:16
+                env:
+                    POSTGRES_USER: postgres
+                    POSTGRES_PASSWORD: postgres
+                    POSTGRES_DB: user_test
+                ports:
+                    - 5432:5432
+                options: >-
+                    --health-cmd "pg_isready -U postgres -d user_test"
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 10
+
         steps:
             - uses: actions/checkout@v4
 
@@ -37,16 +52,20 @@ jobs:
             - name: Black format check
               run: black --check .
 
+            - name: Wait for Postgres
+              run: |
+                  for i in {1..30}; do
+                    pg_isready -h localhost -p 5432 -U postgres -d user_test && exit 0
+                    sleep 1
+                  done
+                  echo "Postgres did not become ready in time" && exit 1
+
             - name: Run tests (user-service)
               working-directory: services/user-service
               env:
                   PYTHONPATH: .
                   ENV: ci
-                  # Settings required by app.core.config during import:
-                  JWT_SECRET: "supersecret"
-                  JWT_ALG: "HS256"
-                  JWT_EXPIRES_MIN: "60"
-                  DATABASE_URL: "sqlite+pysqlite:///:memory:"
+                  DATABASE_URL: "postgresql+psycopg://postgres:postgres@localhost:5432/user_test"
               run: |
                   pytest -q --maxfail=1 --cov=app --cov-report=term-missing --cov-fail-under=60 --disable-warnings
     catalog-service:

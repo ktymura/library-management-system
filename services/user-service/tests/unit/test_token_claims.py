@@ -4,14 +4,7 @@ from app.core.security import create_access_token
 from jose import jwt
 
 
-def test_token_contains_role_iss_aud(monkeypatch):
-    # ustaw konfig na test
-    monkeypatch.setenv("JWT_SECRET", "supersecret")
-    monkeypatch.setenv("JWT_ALG", "HS256")
-    monkeypatch.setenv("JWT_EXPIRES_MIN", "60")
-    monkeypatch.setenv("JWT_ISSUER", "lms-user-service")
-    monkeypatch.setenv("JWT_AUDIENCE", "lms-catalog-service")
-
+def test_token_contains_role_iss_aud():
     token = create_access_token(
         subject="42",
         role="LIBRARIAN",
