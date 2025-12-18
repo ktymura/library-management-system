@@ -11,6 +11,9 @@ services:
             CATALOG_DB_NAME: ${CATALOG_DB_NAME}
             CATALOG_DB_USER: ${CATALOG_DB_USER}
             CATALOG_DB_PASSWORD: ${CATALOG_DB_PASSWORD}
+            CIRCULATION_DB_NAME: ${CIRCULATION_DB_NAME}
+            CIRCULATION_DB_USER: ${CIRCULATION_DB_USER}
+            CIRCULATION_DB_PASSWORD: ${CIRCULATION_DB_PASSWORD}
         ports:
             - "${POSTGRES_PORT}:5432"
         volumes:
@@ -66,6 +69,26 @@ services:
             - "${CATALOG_SERVICE_PORT}:8000"
         env_file:
             - ./services/user-service/.env
+            - ./.env
+        depends_on:
+            db:
+                condition: service_healthy
+        healthcheck:
+            test: ["CMD", "wget", "-qO-", "http://localhost:8000/health"]
+            interval: 5s
+            timeout: 3s
+            retries: 20
+    circulation-service:
+        build:
+            context: ./services/circulation-service
+        container_name: lms-circulation
+        environment:
+            PORT: 8000
+            DATABASE_URL: "postgresql://${CIRCULATION_DB_USER}:${CIRCULATION_DB_PASSWORD}@db:5432/${CIRCULATION_DB_NAME}"
+        ports:
+            - "${CIRCULATION_SERVICE_PORT}:8000"
+        env_file:
+            - ./services/circulation-service/.env
             - ./.env
         depends_on:
             db:
