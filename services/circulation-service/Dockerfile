@@ -18,4 +18,4 @@ ENV PORT=8000
 ENV PYTHONPATH=/app
 
 # Domyślne wejście: uvicorn
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT}"]
+CMD ["sh", "/app/entrypoint.sh"]
