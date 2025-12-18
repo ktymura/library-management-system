@@ -5,29 +5,28 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, event
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
 # PATH / ENV
+CIRCULATION_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(CIRCULATION_ROOT))
 
-
-CATALOG_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(CATALOG_ROOT))
-
-os.environ["DATABASE_URL"] = "sqlite+pysqlite:///:memory:"
-
+from app.core.config import settings  # noqa: E402
 from app.deps import get_db  # noqa: E402
 from app.main import app  # noqa: E402
 
-# ENGINE (JEDNA CONNECTION NA CAŁĄ SESJĘ)
-
-
-engine = create_engine(
-    "sqlite+pysqlite:///:memory:",
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
-    future=True,
-)
+# SQLite in-memory wymaga StaticPool + check_same_thread
+if settings.DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(
+        settings.DATABASE_URL,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+        future=True,
+    )
+# Postgres i reszta: zwykły engine
+else:
+    engine = create_engine(settings.DATABASE_URL, future=True)
 
 
 # CONNECTION (SESSION SCOPE)
@@ -48,8 +47,8 @@ def apply_migrations(connection):
     from alembic.config import Config, command
 
     alembic_cfg = Config()
-    alembic_cfg.set_main_option("script_location", str(CATALOG_ROOT / "alembic"))
-    alembic_cfg.set_main_option("sqlalchemy.url", "sqlite+pysqlite:///:memory:")
+    alembic_cfg.set_main_option("script_location", str(CIRCULATION_ROOT / "alembic"))
+    alembic_cfg.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
     alembic_cfg.attributes["connection"] = connection
     command.upgrade(alembic_cfg, "head")
 
@@ -59,12 +58,9 @@ def apply_migrations(connection):
 
 @pytest.fixture()
 def db_session(connection):
-    # zewnętrzna transakcja (rollback po teście)
     transaction = connection.begin()
-
     session = Session(bind=connection, future=True)
 
-    # SAVEPOINT – pozwala na commit() w kodzie appki
     session.begin_nested()
 
     @event.listens_for(session, "after_transaction_end")

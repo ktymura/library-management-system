@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str | None = "sqlite+pysqlite:///:memory:"
 
     # JWT
-    JWT_SECRET: str | None = None
+    JWT_SECRET: str | None = "superecret"
     JWT_ALG: str = "HS256"
     JWT_EXPIRES_MIN: int = 60  # czas ważności access tokenu
     JWT_ISSUER: str | None = None
