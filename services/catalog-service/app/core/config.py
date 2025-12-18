@@ -25,7 +25,7 @@ elif env_candidates:
     # fall back to the highest .env we saw while walking upward
     _ROOT_ENV = env_candidates[-1]
 
-# service-level .env (services/user-service/.env) if present
+# service-level .env (services/catalog-service/.env) if present
 service_dir = None
 for p in _HERE.parents:
     if p.name == "catalog-service":

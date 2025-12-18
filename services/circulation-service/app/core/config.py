@@ -25,10 +25,10 @@ elif env_candidates:
     # fall back to the highest .env we saw while walking upward
     _ROOT_ENV = env_candidates[-1]
 
-# service-level .env (services/user-service/.env) if present
+# service-level .env (services/circulation-service/.env) if present
 service_dir = None
 for p in _HERE.parents:
-    if p.name == "user-service":
+    if p.name == "circulation-service":
         service_dir = p
         break
 if service_dir and (service_dir / ".env").exists():
@@ -72,11 +72,11 @@ class Settings(BaseSettings):
                     key, val = line.split("=", 1)
                     key = key.strip()
                     val = val.strip()
-                    if key == "USER_DB_USER":
+                    if key == "CIRCULATION_DB_USER":
                         db_user = val
-                    elif key == "USER_DB_PASSWORD":
+                    elif key == "CIRCULATION_DB_PASSWORD":
                         db_pass = val
-                    elif key == "USER_DB_NAME":
+                    elif key == "CIRCULATION_DB_NAME":
                         db_name = val
                     elif key == "DB_HOST":
                         db_host = val
@@ -84,9 +84,9 @@ class Settings(BaseSettings):
                         db_port = val
 
         # Allow real environment variables (e.g., CI overrides) to supersede root .env values.
-        db_user = os.getenv("USER_DB_USER", db_user)
-        db_pass = os.getenv("USER_DB_PASSWORD", db_pass)
-        db_name = os.getenv("USER_DB_NAME", db_name)
+        db_user = os.getenv("CIRCULATION_DB_USER", db_user)
+        db_pass = os.getenv("CIRCULATION_DB_PASSWORD", db_pass)
+        db_name = os.getenv("CIRCULATION_DB_NAME", db_name)
         db_host = os.getenv("DB_HOST", db_host or "localhost")
         db_port = os.getenv("POSTGRES_PORT", db_port or "5432")
         if all([db_user, db_pass, db_name]):
@@ -103,7 +103,7 @@ class Settings(BaseSettings):
             return self
 
         raise ValueError(
-            "DATABASE_URL is not set and cannot be constructed from USER_DB_* variables"
+            "DATABASE_URL is not set and cannot be constructed from CIRCULATION_DB_* variables"
         )
 
 

@@ -14,27 +14,25 @@ CIRCULATION_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(CIRCULATION_ROOT))
 
 # Fallback lokalny (żeby dało się odpalać testy bez Postgresa)
-DEFAULT_DB_URL = "sqlite+pysqlite:///:memory:"
-DATABASE_URL = os.getenv("DATABASE_URL", DEFAULT_DB_URL)
+if os.getenv("DATABASE_URL") is None:
+    os.environ["DATABASE_URL"] = "sqlite+pysqlite:///:memory:"
+
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 from app.deps import get_db  # noqa: E402
 from app.main import app  # noqa: E402
 
-
-def make_engine(db_url: str):
-    # SQLite in-memory wymaga StaticPool + check_same_thread
-    if db_url.startswith("sqlite"):
-        return create_engine(
-            db_url,
-            connect_args={"check_same_thread": False},
-            poolclass=StaticPool,
-            future=True,
-        )
-    # Postgres i reszta: zwykły engine
-    return create_engine(db_url, future=True)
-
-
-engine = make_engine(DATABASE_URL)
+# SQLite in-memory wymaga StaticPool + check_same_thread
+if DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(
+        DATABASE_URL,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+        future=True,
+    )
+# Postgres i reszta: zwykły engine
+else:
+    engine = create_engine(DATABASE_URL, future=True)
 
 
 # CONNECTION (SESSION SCOPE)

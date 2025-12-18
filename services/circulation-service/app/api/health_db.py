@@ -1,6 +1,7 @@
-from app.db import engine
 from fastapi import APIRouter
 from sqlalchemy import text
+
+from app.db import engine
 
 router = APIRouter(tags=["health"])
 
