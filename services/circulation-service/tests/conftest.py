@@ -9,30 +9,24 @@ from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
 # PATH / ENV
-
 CIRCULATION_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(CIRCULATION_ROOT))
 
-# Fallback lokalny (żeby dało się odpalać testy bez Postgresa)
-if os.getenv("DATABASE_URL") is None:
-    os.environ["DATABASE_URL"] = "sqlite+pysqlite:///:memory:"
-
-DATABASE_URL = os.getenv("DATABASE_URL")
-
+from app.core.config import settings  # noqa: E402
 from app.deps import get_db  # noqa: E402
 from app.main import app  # noqa: E402
 
 # SQLite in-memory wymaga StaticPool + check_same_thread
-if DATABASE_URL.startswith("sqlite"):
+if settings.DATABASE_URL.startswith("sqlite"):
     engine = create_engine(
-        DATABASE_URL,
+        settings.DATABASE_URL,
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
         future=True,
     )
 # Postgres i reszta: zwykły engine
 else:
-    engine = create_engine(DATABASE_URL, future=True)
+    engine = create_engine(settings.DATABASE_URL, future=True)
 
 
 # CONNECTION (SESSION SCOPE)
@@ -54,7 +48,7 @@ def apply_migrations(connection):
 
     alembic_cfg = Config()
     alembic_cfg.set_main_option("script_location", str(CIRCULATION_ROOT / "alembic"))
-    alembic_cfg.set_main_option("sqlalchemy.url", DATABASE_URL)
+    alembic_cfg.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
     alembic_cfg.attributes["connection"] = connection
     command.upgrade(alembic_cfg, "head")
 
