@@ -6,7 +6,6 @@ Projekt realizowany w ramach zajęć z **Metodyk Tworzenia Oprogramowania**.
 
 System zarządzania biblioteką zbudowany w architekturze **mikroserwisowej**, z wykorzystaniem **FastAPI**, **PostgreSQL**, **Dockera** oraz **CI/CD**.
 
-
 ## Szybki start
 
 ### Wymagania
@@ -37,14 +36,14 @@ Po uruchomieniu systemu migracje baz danych wykonywane są automatycznie przez A
 - autoryzacja oparta o JWT
 - endpoint identyfikacji użytkownika (`GET /users/me`)
 - obsługa ról użytkowników:
-    - `READER` (domyślna)
-    - `LIBRARIAN`
-    - `ADMIN`
+  - `READER` (domyślna)
+  - `LIBRARIAN`
+  - `ADMIN`
 - walidacja haseł (siła hasła, limit bcrypt)
 - migracje bazy danych (Alembic)
 - pełna dokumentacja API w Swagger (OpenAPI)
 
-Swagger UI dostępny pod: http://localhost:8001/docs
+Swagger UI dostępny pod: <http://localhost:8001/docs>
 
 ### Catalog Service
 
@@ -71,25 +70,24 @@ Swagger UI dostępny pod: http://localhost:8001/docs
 - migracje bazy danych (Alembic),
 - dokumentacja API w Swagger (OpenAPI).
 
-Swagger UI dostępny pod: http://localhost:8002/docs
-
+Swagger UI dostępny pod: <http://localhost:8002/docs>
 
 ## Komponenty systemu
 
 - **user-service**
-    - obsługa użytkowników i autoryzacji (JWT, role),
-    - FastAPI, SQLAlchemy, Alembic
+  - obsługa użytkowników i autoryzacji (JWT, role),
+  - FastAPI, SQLAlchemy, Alembic
 - **catalog-service**
-    - obsługa katalogu książek i egzemplarzy (Author / Book / Copy),
-    - wyszukiwanie książek po tytule lub autorze,
-    - autoryzacja JWT (Bearer),
-    - weryfikacja ról użytkowników,
-    - FastAPI, SQLAlchemy 2.0, Alembic
+  - obsługa katalogu książek i egzemplarzy (Author / Book / Copy),
+  - wyszukiwanie książek po tytule lub autorze,
+  - autoryzacja JWT (Bearer),
+  - weryfikacja ról użytkowników,
+  - FastAPI, SQLAlchemy 2.0, Alembic
 - **PostgreSQL**
-    - jedna instancja bazy danych,
-    - osobne bazy logiczne dla serwisów
+  - jedna instancja bazy danych,
+  - osobne bazy logiczne dla serwisów
 - **pgAdmin**
-    - panel administracyjny bazy danych
+  - panel administracyjny bazy danych
 
 ## Konfiguracja środowiska
 
@@ -116,6 +114,7 @@ System wykorzystuje tokeny JWT do autoryzacji w architekturze mikroserwisowej.
 - rola użytkownika przekazywana jest w claimie `role`.
 
 Dostęp do endpointów modyfikujących katalog wymaga roli:
+
 - `LIBRARIAN` lub `ADMIN`.
 
 ## Jakość i CI/CD
