@@ -1,5 +1,6 @@
-from app.api import health_db_router, health_router
 from fastapi import FastAPI
+
+from app.api import health_db_router, health_router
 
 app = FastAPI(title="Circulation Service")
 # Routers
