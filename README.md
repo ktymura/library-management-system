@@ -61,6 +61,7 @@ Swagger UI dostępny pod: <http://localhost:8001/docs>
   - `DELETE /books/{id}`,
 - wyszukiwanie książek:
   - `GET /books/search?query=` (wyszukiwanie po tytule lub autorze),
+- optymalizacja wyszukiwania przy użyciu indeksów GIN,
 - zarządzanie egzemplarzami książek:
   - `POST /books/{id}/copies`,
   - `GET /books/{id}/copies`,

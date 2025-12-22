@@ -163,6 +163,41 @@ Dla `circulation-service` migrowane są m.in.:
 - typ ENUM `loan_status` (ACTIVE, RETURNED),
 - znaczniki czasu wypożyczenia i zwrotu.
 
+## 3.3 Wydajność wyszukiwania i indeksy GIN
+
+W celu zapewnienia wysokiej wydajności wyszukiwania książek po tytule i autorze,
+`catalog-service` wykorzystuje indeksy typu **GIN (Generalized Inverted Index)** z rozszerzeniem `pg_trgm`.
+
+### Mechanizm wyszukiwania
+
+Wyszukiwanie realizowane jest na poziomie bazy danych PostgreSQL z użyciem operatora:
+
+- `ILIKE '%<query>%'`
+
+Zapytania obejmują:
+- pole `books.title`,
+- pole `authors.full_name` (poprzez JOIN z tabelą `authors`).
+
+### Zastosowane indeksy
+
+Dla przyspieszenia operacji `ILIKE` zastosowano indeksy GIN oparte o trigramy:
+
+- `books.title` → indeks `GIN (title gin_trgm_ops)`
+- `authors.full_name` → indeks `GIN (full_name gin_trgm_ops)`
+
+Indeksy te są tworzone w dedykowanej migracji Alembic i współistnieją
+z klasycznymi indeksami B-tree (np. na potrzeby sortowania lub wyszukiwania exact-match).
+
+### Rozszerzenie pg_trgm
+
+Baza danych `catalog-service` korzysta z rozszerzenia PostgreSQL:
+
+- `pg_trgm`
+
+Rozszerzenie to umożliwia efektywne porównywanie fragmentów tekstu
+i jest wymagane do działania operatora `gin_trgm_ops`.
+
+
 ## 4. Docker Compose
 
 Plik `docker-compose.yml` definiuje:
