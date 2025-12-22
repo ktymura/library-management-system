@@ -23,6 +23,7 @@ Po uruchomieniu:
 
 - **User Service:** [http://localhost:8001/health](http://localhost:8001/health)
 - **Catalog Service:** [http://localhost:8002/health](http://localhost:8002/health)
+- **Circulation Service:** http://localhost:8003/health
 - **pgAdmin:** [http://localhost:5050](http://localhost:5050)
 
 Po uruchomieniu systemu migracje baz danych wykonywane są automatycznie przez Alembic.
@@ -72,6 +73,25 @@ Swagger UI dostępny pod: <http://localhost:8001/docs>
 
 Swagger UI dostępny pod: <http://localhost:8002/docs>
 
+### Circulation Service
+
+- obsługa wypożyczeń i zwrotów książek,
+- encja domenowa:
+  - `Loan`,
+- statusy wypożyczeń:
+  - `ACTIVE`,
+  - `RETURNED`,
+- endpointy techniczne:
+  - `GET /health`,
+  - `GET /health/db`,
+- niezależna baza danych dla wypożyczeń,
+- migracje bazy danych (Alembic),
+- przygotowana warstwa domenowa pod:
+  - wypożyczanie egzemplarza,
+  - zwrot egzemplarza.
+
+Swagger UI dostępny pod: <http://localhost:8003/docs>
+
 ## Komponenty systemu
 
 - **user-service**
@@ -82,6 +102,11 @@ Swagger UI dostępny pod: <http://localhost:8002/docs>
   - wyszukiwanie książek po tytule lub autorze,
   - autoryzacja JWT (Bearer),
   - weryfikacja ról użytkowników,
+  - FastAPI, SQLAlchemy 2.0, Alembic
+- **circulation-service**
+  - obsługa wypożyczeń i zwrotów książek,
+  - przechowywanie historii wypożyczeń,
+  - integracja z catalog-service (status egzemplarzy),
   - FastAPI, SQLAlchemy 2.0, Alembic
 - **PostgreSQL**
   - jedna instancja bazy danych,
@@ -106,12 +131,7 @@ System wykorzystuje tokeny JWT do autoryzacji w architekturze mikroserwisowej.
 
 - token generowany jest przez `user-service` podczas logowania,
 - token przekazywany jest w nagłówku: `Authorization: Bearer <token>`
-- `catalog-service` weryfikuje token lokalnie:
-- podpis (HS256),
-- czas ważności (`exp`),
-- wystawcę (`iss`),
-- odbiorcę (`aud`),
-- rola użytkownika przekazywana jest w claimie `role`.
+- `catalog-service` i `circulation-service` weryfikują token lokalnie.
 
 Dostęp do endpointów modyfikujących katalog wymaga roli:
 

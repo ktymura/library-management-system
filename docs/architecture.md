@@ -44,6 +44,25 @@ Projekt zrealizowany jest w architekturze mikroserwisowej. Każdy serwis:
     - `/health`,
 - wykorzystuje FastAPI, SQLAlchemy 2.0 oraz Alembic.
 
+#### circulation-service
+
+- odpowiedzialny za obsługę wypożyczeń i zwrotów książek,
+- zarządza cyklem życia wypożyczenia egzemplarza,
+- przechowuje historię wypożyczeń niezależnie od katalogu,
+- realizuje logikę biznesową:
+  - wypożyczenie egzemplarza,
+  - zwrot egzemplarza,
+- komunikuje się z `catalog-service` w celu:
+  - weryfikacji dostępności egzemplarza,
+  - aktualizacji statusu egzemplarza (AVAILABLE ↔ LOANED),
+- udostępnia endpointy:
+  - `/loans` (tworzenie wypożyczenia),
+  - `/returns/{loanId}` (zwrot wypożyczenia),
+  - `/health`,
+  - `/health/db`,
+- wykorzystuje FastAPI, SQLAlchemy 2.0 oraz Alembic,
+- posiada własną bazę danych logiczną.
+
 ## 2.2 Autoryzacja i bezpieczeństwo
 
 System wykorzystuje mechanizm autoryzacji oparty o tokeny JWT (JSON Web Token).
@@ -55,7 +74,12 @@ System wykorzystuje mechanizm autoryzacji oparty o tokeny JWT (JSON Web Token).
     - czas ważności (`exp`),
     - wystawcę (`iss`),
     - odbiorcę (`aud`),
-- token zawiera claim `role`, który determinuje dostęp do endpointów.
+- token zawiera claim `role`, który determinuje dostęp do endpointów,
+- `circulation-service` weryfikuje token JWT lokalnie:
+  - sprawdza poprawność podpisu,
+  - waliduje `exp`, `iss` oraz `aud`,
+  - wykorzystuje claim `role` do kontroli dostępu do operacji wypożyczeń i zwrotów.
+
 
 ### Role użytkowników
 
@@ -69,15 +93,37 @@ Przykłady ograniczeń:
 
 - `POST /books` – wymaga roli `LIBRARIAN` lub `ADMIN`,
 - `POST /books/{id}/copies` – wymaga roli `LIBRARIAN` lub `ADMIN`,
+- `POST /loans` – wymaga roli `LIBRARIAN` lub `ADMIN`,
 - endpointy `GET` dostępne są dla wszystkich ról.
 
+## 2.3 Integracja wypożyczeń i komunikacja między serwisami
+
+### Proces wypożyczenia
+Operacja wypożyczenia jest inicjowana przez użytkownika z rolą LIBRARIAN (lub ADMIN) podczas obsługi czytelnika w bibliotece.
+- POST /loans w circulation-service wymaga roli LIBRARIAN lub ADMIN.
+- W żądaniu przekazywane są:
+    - copy_id – identyfikator egzemplarza,
+    - user_id – identyfikator czytelnika, któremu wypożyczany jest egzemplarz.
+- circulation-service realizuje logikę domenową i tworzy rekord Loan (status ACTIVE).
+- Następnie circulation-service aktualizuje status egzemplarza w catalog-service (np. AVAILABLE → LOANED).
+
+### Autoryzacja service-to-service
+catalog-service chroni operacje modyfikujące status egzemplarzy przy użyciu JWT i wymaga roli LIBRARIAN lub ADMIN.
+
+W komunikacji serwis–serwis circulation-service używa serwisowego tokenu JWT z rolą ADMIN (konfigurowanego w zmiennej środowiskowej SERVICE_JWT) do wywołań aktualizujących status kopii w catalog-service. Token jest generowany przez user-service i wykorzystywany wyłącznie do komunikacji wewnętrznej.
+
+### Spójność danych i odporność na błędy
+Aby ograniczyć niespójność między serwisami, circulation-service stosuje kompensację:
+- jeśli utworzenie Loan zakończy się sukcesem, ale aktualizacja statusu kopii w catalog-service nie powiedzie się, rekord Loan jest wycofywany (usuwany) w tej samej transakcji.
+Dodatkowo baza danych circulation-service posiada ograniczenie zapewniające, że dla jednego copy_id może istnieć tylko jedno aktywne wypożyczenie (ACTIVE) w danym momencie (partial unique index).
 
 ## 3. Baza danych
 
 System korzysta z **jednej instancji PostgreSQL**, w której:
 
 - tworzona jest baza i użytkownik dla `user-service`,
-- tworzona jest baza i użytkownik dla `catalog-service`.
+- tworzona jest baza i użytkownik dla `catalog-service`,
+- tworzona jest baza i użytkownik dla `circulation-service`.
 
 ### 3.1 Inicjalizacja bazy danych
 
@@ -112,6 +158,10 @@ Dla catalog-service migrowane są m.in.:
 - tabela books (ISBN, relacja do autorów, metadane publikacji),
 - tabela copies (egzemplarze książek),
 - typ ENUM copy_status (AVAILABLE, LOANED, LOST, DAMAGED).
+Dla `circulation-service` migrowane są m.in.:
+- tabela `loans`,
+- typ ENUM `loan_status` (ACTIVE, RETURNED),
+- znaczniki czasu wypożyczenia i zwrotu.
 
 ## 4. Docker Compose
 
@@ -144,6 +194,7 @@ Każdy serwis udostępnia endpoint `/health`, który:
 - zwraca HTTP 200,
 - wykorzystywany jest przez Docker do monitorowania stanu kontenera.
 
+Dodatkowo `circulation-service` udostępnia endpoint `/health/db`, który weryfikuje połączenie z bazą danych.
 
 ## 7. CI/CD
 
@@ -169,6 +220,11 @@ Zrealizowane funkcjonalności:
 - pełny CRUD książek oraz zarządzanie egzemplarzami,
 - testy jednostkowe i integracyjne (pytest),
 - automatyczne uruchamianie testów w CI,
-- dokumentacja OpenAPI z obsługą Bearer Auth.
+- dokumentacja OpenAPI z obsługą Bearer Auth,
+- uruchomiony mikroserwis circulation-service,
+- endpoint POST /loans zabezpieczony rolą LIBRARIAN/ADMIN oraz integracja z catalog-service (zmiana statusu kopii),
+- niezależna baza danych dla wypożyczeń,
+- migracje tabel wypożyczeń (loans),
+- healthcheck aplikacji i połączenia z bazą danych.
 
 Projekt posiada stabilny fundament architektoniczny i jest gotowy do dalszej rozbudowy funkcjonalnej.
