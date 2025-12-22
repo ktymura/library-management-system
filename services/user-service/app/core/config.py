@@ -1,5 +1,3 @@
-import os
-
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -12,13 +10,16 @@ class Settings(BaseSettings):
     JWT_ALG: str = "HS256"
     JWT_EXPIRES_MIN: int = 60  # czas ważności access tokenu
     JWT_ISSUER: str | None = "lms-user-service"
-    JWT_AUDIENCE: str | None = "lms-catalog-service"
+    JWT_AUDIENCE: str | None = "lms"
 
     # meta
     ENV: str | None = None
 
     model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", case_sensitive=True, extra="allow"
+        env_file="services\\user-service\\.env",
+        env_file_encoding="utf-8",
+        case_sensitive=True,
+        extra="allow",
     )
 
 

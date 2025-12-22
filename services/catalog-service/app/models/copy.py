@@ -12,7 +12,7 @@ from app.db import Base
 
 class CopyStatus(str, Enum):
     AVAILABLE = "AVAILABLE"
-    BORROWED = "BORROWED"
+    LOANED = "LOANED"
     LOST = "LOST"
     DAMAGED = "DAMAGED"
 

@@ -17,12 +17,12 @@ def test_token_contains_role_iss_aud():
         "supersecret",
         algorithms=["HS256"],
         issuer="lms-user-service",
-        audience="lms-catalog-service",
+        audience="lms",
         options={"verify_aud": True},
     )
 
     assert claims["sub"] == "42"
     assert claims["role"] == "LIBRARIAN"
     assert claims["iss"] == "lms-user-service"
-    assert claims["aud"] == "lms-catalog-service"
+    assert claims["aud"] == "lms"
     assert "exp" in claims

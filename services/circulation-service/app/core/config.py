@@ -1,5 +1,3 @@
-import os
-
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -8,19 +6,24 @@ class Settings(BaseSettings):
     DATABASE_URL: str | None = "sqlite+pysqlite:///:memory:"
 
     # JWT
-    JWT_SECRET: str | None = "superecret"
+    JWT_SECRET: str | None = "supersecret"
     JWT_ALG: str = "HS256"
     JWT_EXPIRES_MIN: int = 60  # czas ważności access tokenu
-    JWT_ISSUER: str | None = None
-    JWT_AUDIENCE: str | None = None
+    JWT_ISSUER: str | None = "lms-user-service"
+    JWT_AUDIENCE: str | None = "lms"
 
     # meta
-    ENV: str = "dev"
+    ENV: str | None = None
 
-    # Load env vars from repo root first (if found), then service-level overrides.
     model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", case_sensitive=True, extra="allow"
+        env_file="services\\circulation-service\\.env",
+        env_file_encoding="utf-8",
+        case_sensitive=True,
+        extra="allow",
     )
+
+    CATALOG_SERVICE_URL: str = "http://catalog-service:8000"
+    SERVICE_JWT: str
 
 
 settings = Settings()  # importuj z innych modułów: from app.core.config import settings

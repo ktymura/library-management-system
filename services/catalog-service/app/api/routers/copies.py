@@ -4,9 +4,10 @@ from typing import Annotated
 
 from app.api.security import require_librarian_or_admin
 from app.deps import get_db
+from app.models import CopyStatus
 from app.repositories import CopyRepository
 from app.schemas import CopyCreate, CopyRead, ErrorResponse
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 RESP_401_403 = {
@@ -43,3 +44,40 @@ def list_copies(
 ):
     repo = CopyRepository(db)
     return repo.list_by_book(book_id, limit=limit, offset=offset)
+
+
+@router.get("/{copy_id}", response_model=CopyRead, responses={**RESP_401_403, **RESP_404})
+def get_copy(copy_id: int, db: Annotated[Session, Depends(get_db)]):
+    repo = CopyRepository(db)
+    c = repo.get(copy_id)  # jeśli metoda nazywa się inaczej, zmień
+    if not c:
+        raise HTTPException(status_code=404, detail="Copy not found")
+    return c
+
+
+@router.patch(
+    "/{copy_id}",
+    response_model=CopyRead,
+    dependencies=[Depends(require_librarian_or_admin)],
+    responses={**RESP_401_403, **RESP_404},
+)
+def update_copy_status(copy_id: int, payload: dict, db: Annotated[Session, Depends(get_db)]):
+    new_status = payload.get("status")
+    if not new_status:
+        raise HTTPException(status_code=400, detail="Missing status")
+
+    # walidacja enum
+    try:
+        CopyStatus(new_status)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail="Invalid status") from exc
+
+    repo = CopyRepository(db)
+    c = repo.get(copy_id)
+    if not c:
+        raise HTTPException(status_code=404, detail="Copy not found")
+
+    c.status = new_status
+    db.commit()
+    db.refresh(c)
+    return c

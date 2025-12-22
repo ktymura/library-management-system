@@ -13,3 +13,4 @@ email-validator==2.2.0
 pytest
 httpx
 pytest-cov
+requests>=2.31.0

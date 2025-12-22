@@ -5,6 +5,7 @@ from app.models.loan import Loan, LoanStatus
 
 def test_create_and_read_loan(db_session):
     loan = Loan(
+        user_id=1,
         copy_id=1,
         status=LoanStatus.ACTIVE,
         loaned_at=datetime.now(timezone.utc),
@@ -20,5 +21,6 @@ def test_create_and_read_loan(db_session):
 
     loaded = db_session.get(Loan, loan.id)
     assert loaded is not None
+    assert loaded.user_id == 1
     assert loaded.copy_id == 1
     assert loaded.returned_at is None
