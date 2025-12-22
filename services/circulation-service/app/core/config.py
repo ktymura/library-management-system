@@ -13,10 +13,10 @@ class Settings(BaseSettings):
     JWT_AUDIENCE: str | None = "lms"
 
     # meta
-    ENV: str = "dev"
+    ENV: str | None = None
 
     model_config = SettingsConfigDict(
-        env_file="services\circulation-service\.env",
+        env_file="services\\circulation-service\\.env",
         env_file_encoding="utf-8",
         case_sensitive=True,
         extra="allow",
