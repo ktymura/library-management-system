@@ -25,6 +25,14 @@ class CatalogServiceError(Exception):
     """Catalog-service unreachable / unexpected response."""
 
 
+class LoanNotFoundError(Exception):
+    """Loan with given id does not exist."""
+
+
+class LoanAlreadyReturnedError(Exception):
+    """Loan is already RETURNED (cannot return twice)."""
+
+
 @dataclass(frozen=True)
 class CreateLoanResult:
     loan: Loan
@@ -112,12 +120,54 @@ def create_loan(*, db: Session, copy_id: int, user_id: int) -> CreateLoanResult:
 
     try:
         _catalog_set_copy_status(copy_id, "LOANED")
-    except Exception as e:
+    except Exception as exc:
         # kompensacja: usuwamy Loan i nie zostawiamy syfu
         db.delete(loan)
         db.flush()
-        raise CatalogServiceError("Failed to update copy status in catalog-service") from e
+        raise CatalogServiceError("Failed to update copy status in catalog-service") from exc
 
     db.commit()
     db.refresh(loan)
     return CreateLoanResult(loan=loan)
+
+
+def return_loan(*, db: Session, loan_id: int) -> Loan:
+    """
+    Business logic for returning a copy.
+    Flow:
+    1) Load Loan
+    2) Validate status (must be ACTIVE)
+    3) Update Loan -> RETURNED + returned_at
+    4) Set catalog copy status -> AVAILABLE
+    5) If catalog update fails -> compensate (revert Loan changes)
+    """
+    if loan_id <= 0:
+        raise ValueError("loan_id must be positive")
+
+    loan: list[Loan | None] = db.get(Loan, loan_id)
+    if loan is None:
+        raise LoanNotFoundError(f"Loan {loan_id} not found")
+
+    if loan.status == LoanStatus.RETURNED:
+        raise LoanAlreadyReturnedError(f"Loan {loan_id} is already returned")
+
+    # zapamiętujemy poprzedni stan pod kompensację
+    prev_status = loan.status
+    prev_returned_at = loan.returned_at
+
+    loan.status = LoanStatus.RETURNED
+    loan.returned_at = datetime.now(timezone.utc)
+    db.flush()
+
+    try:
+        _catalog_set_copy_status(loan.copy_id, "AVAILABLE")
+    except Exception as exc:
+        # kompensacja: cofamy zmianę w Loan
+        loan.status = prev_status
+        loan.returned_at = prev_returned_at
+        db.flush()
+        raise CatalogServiceError("Failed to update copy status in catalog-service") from exc
+
+    db.commit()
+    db.refresh(loan)
+    return loan

@@ -50,9 +50,26 @@ class CopyStatus {
     DAMAGED
 }
 
+class Loan {
+    +int id
+    +LoanStatus status
+    +datetime loaned_at
+    +datetime returned_at
+}
+
+class LoanStatus {
+    <<enumeration>>
+    ACTIVE
+    RETURNED
+}
+
 User --> UserRole : role
 
 Author "1" --> "many" Book : writes
 Book "1" --> "many" Copy : contains
 
+User "1" --> "many" Loan : borrows
+Copy "1" --> "many" Loan : loan history
+
 Copy --> CopyStatus : status
+Loan --> LoanStatus : status

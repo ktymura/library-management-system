@@ -12,7 +12,10 @@ from app.services.loans import (
     CatalogServiceError,
     CopyNotAvailableError,
     CopyNotFoundError,
+    LoanAlreadyReturnedError,
+    LoanNotFoundError,
     create_loan,
+    return_loan,
 )
 
 router = APIRouter(prefix="/loans", tags=["Loans"])
@@ -35,7 +38,7 @@ def create_loan_endpoint(
             id=loan.id,
             copy_id=loan.copy_id,
             user_id=loan.user_id,
-            status=str(loan.status),
+            status=loan.status.value,
             loaned_at=loan.loaned_at,
             returned_at=loan.returned_at,
         )
@@ -43,5 +46,33 @@ def create_loan_endpoint(
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except CopyNotAvailableError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except CatalogServiceError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@router.post(
+    "/{loan_id}/return",
+    response_model=LoanRead,
+    status_code=200,
+    dependencies=[Depends(require_librarian_or_admin)],
+)
+def return_loan_endpoint(
+    loan_id: int,
+    db: Annotated[Session, Depends(get_db)],
+):
+    try:
+        loan = return_loan(db=db, loan_id=loan_id)
+        return LoanRead(
+            id=loan.id,
+            copy_id=loan.copy_id,
+            user_id=loan.user_id,
+            status=loan.status.value,
+            loaned_at=loan.loaned_at,
+            returned_at=loan.returned_at,
+        )
+    except LoanNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except LoanAlreadyReturnedError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
     except CatalogServiceError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc

@@ -1,4 +1,8 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+BASE_DIR = Path(__file__).resolve().parents[2]
 
 
 class Settings(BaseSettings):
@@ -7,8 +11,8 @@ class Settings(BaseSettings):
 
     # JWT
     JWT_SECRET: str | None = "supersecret"
-    JWT_ALG: str = "HS256"
-    JWT_EXPIRES_MIN: int = 60  # czas ważności access tokenu
+    JWT_ALG: str | None = "HS256"
+    JWT_EXPIRES_MIN: int | None = 60  # czas ważności access tokenu
     JWT_ISSUER: str | None = "lms-user-service"
     JWT_AUDIENCE: str | None = "lms"
 
@@ -16,7 +20,7 @@ class Settings(BaseSettings):
     ENV: str | None = None
 
     model_config = SettingsConfigDict(
-        env_file="services\\circulation-service\\.env",
+        env_file=str(BASE_DIR / ".env"),
         env_file_encoding="utf-8",
         case_sensitive=True,
         extra="allow",

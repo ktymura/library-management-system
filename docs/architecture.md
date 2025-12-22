@@ -57,7 +57,7 @@ Projekt zrealizowany jest w architekturze mikroserwisowej. Każdy serwis:
   - aktualizacji statusu egzemplarza (AVAILABLE ↔ LOANED),
 - udostępnia endpointy:
   - `/loans` (tworzenie wypożyczenia),
-  - `/returns/{loanId}` (zwrot wypożyczenia),
+  - `/loans/{loanId}/return` (zwrot wypożyczenia),
   - `/health`,
   - `/health/db`,
 - wykorzystuje FastAPI, SQLAlchemy 2.0 oraz Alembic,
@@ -105,7 +105,16 @@ Operacja wypożyczenia jest inicjowana przez użytkownika z rolą LIBRARIAN (lub
     - copy_id – identyfikator egzemplarza,
     - user_id – identyfikator czytelnika, któremu wypożyczany jest egzemplarz.
 - circulation-service realizuje logikę domenową i tworzy rekord Loan (status ACTIVE).
-- Następnie circulation-service aktualizuje status egzemplarza w catalog-service (np. AVAILABLE → LOANED).
+- Następnie circulation-service aktualizuje status egzemplarza w catalog-service (np. AVAILABLE -> LOANED).
+
+### Proces zwrotu
+
+Zwrot inicjuje bibliotekarz (LIBRARIAN/ADMIN) przez POST /loans/{loanId}/return.
+- circulation-service:
+    - wyszukuje Loan,
+    - waliduje, że Loan ma status ACTIVE,
+    - ustawia Loan.status=RETURNED i returned_at,
+    - aktualizuje status egzemplarza w catalog-service: LOANED -> AVAILABLE.
 
 ### Autoryzacja service-to-service
 catalog-service chroni operacje modyfikujące status egzemplarzy przy użyciu JWT i wymaga roli LIBRARIAN lub ADMIN.
@@ -114,7 +123,8 @@ W komunikacji serwis–serwis circulation-service używa serwisowego tokenu JWT 
 
 ### Spójność danych i odporność na błędy
 Aby ograniczyć niespójność między serwisami, circulation-service stosuje kompensację:
-- jeśli utworzenie Loan zakończy się sukcesem, ale aktualizacja statusu kopii w catalog-service nie powiedzie się, rekord Loan jest wycofywany (usuwany) w tej samej transakcji.
+- jeśli utworzenie Loan zakończy się sukcesem, ale aktualizacja statusu kopii w catalog-service nie powiedzie się, rekord Loan jest wycofywany (usuwany) w tej samej transakcji,
+- jeśli aktualizacja w catalog-service nie powiedzie się podczas zwrotu, circulation-service cofa zmianę w Loan (przywraca ACTIVE i returned_at=None) i zwraca błąd integracji.
 Dodatkowo baza danych circulation-service posiada ograniczenie zapewniające, że dla jednego copy_id może istnieć tylko jedno aktywne wypożyczenie (ACTIVE) w danym momencie (partial unique index).
 
 ## 3. Baza danych
@@ -185,6 +195,46 @@ Plik `.env.example` zawiera przykładową konfigurację:
 - porty serwisów,
 - dane JWT (JWT_SECRET, JWT_ISSUER, JWT_AUDIENCE),
 - dane logowania do pgAdmin.
+
+## 5.1 Tryb demo i seed danych
+
+Projekt wspiera tryb **demo**, który umożliwia szybkie uruchomienie systemu z przykładowymi danymi
+(użytkownicy, książki, egzemplarze, wypożyczenia) bez ręcznego klikania w API.
+
+### Flagi środowiskowe
+
+- `APP_ENV` – określa tryb działania aplikacji.
+  - `APP_ENV=demo` lub `APP_ENV=dev` włącza możliwość seedowania danych.
+- `SEED_DATA=true` – opcjonalna flaga wymuszająca seedowanie (override), użyteczna w testach lokalnych.
+
+Seedowanie jest blokowane w innych trybach (np. produkcyjnych) w celu uniknięcia przypadkowego wstrzyknięcia danych demo.
+
+### Uruchamianie seedowania
+
+Seedowanie uruchamiane jest ręcznie, wewnątrz kontenerów aplikacyjnych, przez moduł `app.seed.run`:
+
+- `user-service`:
+  - `docker compose exec user-service python -m app.seed.run`
+- `catalog-service`:
+  - `docker compose exec catalog-service python -m app.seed.run`
+- `circulation-service`:
+  - `docker compose exec circulation-service python -m app.seed.run`
+
+Dostępny jest również skrypt uruchamiający wszystkie seedy sekwencyjnie (np. `seed-all.ps1`), który:
+1) seeduje użytkowników,
+2) seeduje katalog (autorzy/książki/egzemplarze),
+3) seeduje przykładowe wypożyczenia.
+
+### Idempotentność
+
+Seedowanie jest **idempotentne** – ponowne uruchomienie nie tworzy duplikatów danych.
+Mechanizm opiera się o unikalne atrybuty encji, m.in.:
+- `User.email`
+- `Book.isbn`
+- `Copy.inventory_code`
+
+Dla wypożyczeń (`Loan`) seedowanie sprawdza istnienie rekordu przed dodaniem, aby uniknąć duplikacji
+(np. ponownego tworzenia wypożyczenia dla tego samego `user_id` i `copy_id`).
 
 
 ## 6. Healthchecki

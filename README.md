@@ -86,11 +86,26 @@ Swagger UI dostępny pod: <http://localhost:8002/docs>
   - `GET /health/db`,
 - niezależna baza danych dla wypożyczeń,
 - migracje bazy danych (Alembic),
-- przygotowana warstwa domenowa pod:
-  - wypożyczanie egzemplarza,
-  - zwrot egzemplarza.
+- endpointy biznesowe:
+  - `POST /loans` – rejestracja wypożyczenia egzemplarza,
+  - `POST /loans/{loanId}/return` – rejestracja zwrotu egzemplarza,
+- walidacja statusu wypożyczenia (ACTIVE / RETURNED),
+- integracja z catalog-service (aktualizacja statusu egzemplarza),
+- rejestracja zwrotu książki (zmiana statusu wypożyczenia oraz przywrócenie dostępności egzemplarza).
 
 Swagger UI dostępny pod: <http://localhost:8003/docs>
+
+### Seed danych demo
+W trybie demo (`APP_ENV=demo`) dostępny jest skrypt seedujący dane dla wszystkich serwisów jedną komendą.
+```powershell
+.\seed-all.ps1
+```
+Skrypt uruchamia seedy kolejno dla:
+- user-service
+- catalog-service
+- circulation-service
+
+Seedowanie jest idempotentne – wielokrotne uruchomienie nie powoduje duplikacji danych.
 
 ## Komponenty systemu
 
@@ -133,8 +148,7 @@ System wykorzystuje tokeny JWT do autoryzacji w architekturze mikroserwisowej.
 - token przekazywany jest w nagłówku: `Authorization: Bearer <token>`
 - `catalog-service` i `circulation-service` weryfikują token lokalnie.
 
-Dostęp do endpointów modyfikujących katalog wymaga roli:
-
+Dostęp do endpointów modyfikujących katalog oraz operacji wypożyczeń i zwrotów wymaga roli:
 - `LIBRARIAN` lub `ADMIN`.
 
 ## Jakość i CI/CD

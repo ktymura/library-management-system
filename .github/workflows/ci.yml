@@ -190,6 +190,6 @@ jobs:
                   PYTHONPATH: .
                   ENV: ci
                   DATABASE_URL: "postgresql+psycopg://postgres:postgres@localhost:5432/circulation_test"
-                  SERVICE_JWT: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjo0OTIwMDE1ODY3LCJyb2xlIjoiQURNSU4iLCJpc3MiOiJsbXMtdXNlci1zZXJ2aWNlIiwiYXVkIjoibG1zIn0.ifedPtkCO60IKtm4XgkTLedy-b_85pM72ibDMFnPnyY"
+                  SERVICE_JWT: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjo0OTIwMDI4NDA3LCJyb2xlIjoiQURNSU4iLCJpc3MiOiJsbXMtdXNlci1zZXJ2aWNlIiwiYXVkIjoibG1zIn0.X532rNM8eR976SpLHLGNtnmyxFC13aAwArjGFCgvmHc"
               run: |
                   pytest -q --maxfail=1 --cov=app --cov-report=term-missing --cov-fail-under=60 --disable-warnings
