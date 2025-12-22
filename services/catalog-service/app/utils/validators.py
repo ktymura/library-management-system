@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 
 _ISBN10_RE = re.compile(r"^\d{9}[\dX]$")
 _ISBN13_RE = re.compile(r"^\d{13}$")
@@ -46,7 +46,7 @@ def validate_isbn(value: str | None) -> str | None:
 def validate_year(year: int | None) -> int | None:
     if year is None:
         return None
-    current = datetime.now(datetime.timezone.utc).year
+    current = datetime.now(timezone.utc).year
     # typowy zakres publikacji
     if 1400 <= year <= current + 1:
         return year
