@@ -116,12 +116,11 @@ def create_loan(*, db: Session, copy_id: int, user_id: int) -> CreateLoanResult:
         returned_at=None,
     )
     db.add(loan)
-    db.flush()  # żeby dostać loan.id bez commitowania
+    db.flush()
 
     try:
         _catalog_set_copy_status(copy_id, "LOANED")
     except Exception as exc:
-        # kompensacja: usuwamy Loan i nie zostawiamy syfu
         db.delete(loan)
         db.flush()
         raise CatalogServiceError("Failed to update copy status in catalog-service") from exc

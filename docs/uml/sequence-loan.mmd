@@ -1,0 +1,71 @@
+﻿sequenceDiagram
+autonumber
+actor Librarian as Bibliotekarz/Admin
+participant CAPI as Circulation API
+participant CDB as Circulation DB
+participant KAPI as Catalog API
+participant KDB as Catalog DB
+
+Note over Librarian,CAPI: Endpoint chroniony: require_librarian_or_admin
+
+Librarian->>CAPI: POST /loans\n{copy_id, user_id}
+activate CAPI
+
+CAPI->>CAPI: create_loan(db, copy_id, user_id)
+
+Note over CAPI: 1) Sprawdzenie dostępności egzemplarza
+CAPI->>KAPI: GET /copies/{copy_id}\nAuthorization: Bearer SERVICE_JWT
+activate KAPI
+KAPI->>KDB: SELECT copy WHERE id = copy_id
+activate KDB
+KDB-->>KAPI: copy(status)
+deactivate KDB
+KAPI-->>CAPI: 200 {status}
+deactivate KAPI
+
+alt Copy not found (404)
+    CAPI-->>Librarian: 404 Copy not found
+
+else Copy exists but status != AVAILABLE
+    CAPI-->>Librarian: 400 Copy not available
+
+else Copy AVAILABLE
+    Note over CAPI: 2) Utworzenie Loan (ACTIVE)
+    CAPI->>CDB: INSERT Loan\n(flush)
+    activate CDB
+    CDB-->>CAPI: loan.id
+    deactivate CDB
+
+    Note over CAPI: 3) Aktualizacja statusu w Catalog -> LOANED
+    CAPI->>KAPI: PATCH /copies/{copy_id}\n{status:"LOANED"}
+    activate KAPI
+    KAPI->>KDB: UPDATE copies SET status='LOANED'
+    activate KDB
+    KDB-->>KAPI: ok
+    deactivate KDB
+    KAPI-->>CAPI: 200 / 204
+    deactivate KAPI
+
+    Note over CAPI: 4) Commit transakcji
+    CAPI->>CDB: COMMIT + REFRESH
+    activate CDB
+    CDB-->>CAPI: LoanRead
+    deactivate CDB
+
+    CAPI-->>Librarian: 201 Created (LoanRead)
+end
+
+alt Catalog service error
+    alt Error during GET /copies
+        CAPI-->>Librarian: 502 catalog-service error
+    else Error during PATCH /copies
+        Note over CAPI: Kompensacja
+        CAPI->>CDB: DELETE Loan\n(flush)
+        activate CDB
+        CDB-->>CAPI: ok
+        deactivate CDB
+        CAPI-->>Librarian: 502 Failed to update copy status
+    end
+end
+
+deactivate CAPI
