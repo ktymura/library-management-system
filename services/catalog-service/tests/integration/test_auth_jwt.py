@@ -7,7 +7,7 @@ def make_token(role: str) -> str:
         "sub": "testuser",
         "role": role,
         "iss": "lms-user-service",
-        "aud": "lms-catalog-service",
+        "aud": "lms",
     }
     return jwt.encode(payload, "supersecret", algorithm="HS256")
 

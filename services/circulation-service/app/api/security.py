@@ -3,9 +3,10 @@ from __future__ import annotations
 from enum import Enum
 from typing import Annotated
 
-from app.utils.jwt import verify_and_decode_token
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+
+from app.utils.jwt import verify_and_decode_token
 
 bearer_scheme = HTTPBearer(auto_error=False)
 

@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 
-from app.api import health_db_router, health_router
+from app.api import health_db_router, health_router, loans_router
 
 app = FastAPI(title="Circulation Service")
 # Routers
 app.include_router(health_router)
 app.include_router(health_db_router)
+app.include_router(loans_router)

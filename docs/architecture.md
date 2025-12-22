@@ -111,7 +111,7 @@ Dla catalog-service migrowane są m.in.:
 - tabela authors,
 - tabela books (ISBN, relacja do autorów, metadane publikacji),
 - tabela copies (egzemplarze książek),
-- typ ENUM copy_status (AVAILABLE, BORROWED, LOST, DAMAGED).
+- typ ENUM copy_status (AVAILABLE, LOANED, LOST, DAMAGED).
 
 ## 4. Docker Compose
 

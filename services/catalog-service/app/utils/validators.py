@@ -46,8 +46,8 @@ def validate_isbn(value: str | None) -> str | None:
 def validate_year(year: int | None) -> int | None:
     if year is None:
         return None
-    current = datetime.utcnow().year
+    current = datetime.now(datetime.timezone.utc).year
     # typowy zakres publikacji
     if 1400 <= year <= current + 1:
         return year
-    raise ValueError(f"Invalid published_year (must be 1400..{current+1}).")
+    raise ValueError(f"Invalid published_year (must be 1400..{current + 1}).")

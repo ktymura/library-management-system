@@ -24,7 +24,7 @@ def upgrade() -> None:
     # create_type=False => SQLAlchemy nie będzie próbował tworzyć typu automatycznie przy kolumnie
     copy_status_pg_enum = postgresql.ENUM(
         "AVAILABLE",
-        "BORROWED",
+        "LOANED",
         "LOST",
         "DAMAGED",
         name="copy_status",
@@ -38,7 +38,7 @@ def upgrade() -> None:
             DO $$
             BEGIN
                 IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'copy_status') THEN
-                    CREATE TYPE copy_status AS ENUM ('AVAILABLE','BORROWED','LOST','DAMAGED');
+                    CREATE TYPE copy_status AS ENUM ('AVAILABLE','LOANED','LOST','DAMAGED');
                 END IF;
             END$$;
             """

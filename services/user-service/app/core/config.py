@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     JWT_ALG: str = "HS256"
     JWT_EXPIRES_MIN: int = 60  # czas ważności access tokenu
     JWT_ISSUER: str | None = "lms-user-service"
-    JWT_AUDIENCE: str | None = "lms-catalog-service"
+    JWT_AUDIENCE: str | None = "lms"
 
     # meta
     ENV: str | None = None

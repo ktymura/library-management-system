@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
 from sqlalchemy import DateTime, Integer
@@ -17,6 +17,7 @@ class Loan(Base):
     __tablename__ = "loans"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(Integer, index=True, nullable=False)
     copy_id: Mapped[int] = mapped_column(Integer, index=True, nullable=False)
 
     status: Mapped[LoanStatus] = mapped_column(
@@ -28,6 +29,7 @@ class Loan(Base):
     loaned_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
+        default=lambda: datetime.now(timezone.utc),
     )
     returned_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True),
