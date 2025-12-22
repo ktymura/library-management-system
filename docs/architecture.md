@@ -196,6 +196,46 @@ Plik `.env.example` zawiera przykładową konfigurację:
 - dane JWT (JWT_SECRET, JWT_ISSUER, JWT_AUDIENCE),
 - dane logowania do pgAdmin.
 
+## 5.1 Tryb demo i seed danych
+
+Projekt wspiera tryb **demo**, który umożliwia szybkie uruchomienie systemu z przykładowymi danymi
+(użytkownicy, książki, egzemplarze, wypożyczenia) bez ręcznego klikania w API.
+
+### Flagi środowiskowe
+
+- `APP_ENV` – określa tryb działania aplikacji.
+  - `APP_ENV=demo` lub `APP_ENV=dev` włącza możliwość seedowania danych.
+- `SEED_DATA=true` – opcjonalna flaga wymuszająca seedowanie (override), użyteczna w testach lokalnych.
+
+Seedowanie jest blokowane w innych trybach (np. produkcyjnych) w celu uniknięcia przypadkowego wstrzyknięcia danych demo.
+
+### Uruchamianie seedowania
+
+Seedowanie uruchamiane jest ręcznie, wewnątrz kontenerów aplikacyjnych, przez moduł `app.seed.run`:
+
+- `user-service`:
+  - `docker compose exec user-service python -m app.seed.run`
+- `catalog-service`:
+  - `docker compose exec catalog-service python -m app.seed.run`
+- `circulation-service`:
+  - `docker compose exec circulation-service python -m app.seed.run`
+
+Dostępny jest również skrypt uruchamiający wszystkie seedy sekwencyjnie (np. `seed-all.ps1`), który:
+1) seeduje użytkowników,
+2) seeduje katalog (autorzy/książki/egzemplarze),
+3) seeduje przykładowe wypożyczenia.
+
+### Idempotentność
+
+Seedowanie jest **idempotentne** – ponowne uruchomienie nie tworzy duplikatów danych.
+Mechanizm opiera się o unikalne atrybuty encji, m.in.:
+- `User.email`
+- `Book.isbn`
+- `Copy.inventory_code`
+
+Dla wypożyczeń (`Loan`) seedowanie sprawdza istnienie rekordu przed dodaniem, aby uniknąć duplikacji
+(np. ponownego tworzenia wypożyczenia dla tego samego `user_id` i `copy_id`).
+
 
 ## 6. Healthchecki
 

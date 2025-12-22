@@ -11,8 +11,8 @@ class Settings(BaseSettings):
 
     # JWT
     JWT_SECRET: str | None = "supersecret"
-    JWT_ALG: str = "HS256"
-    JWT_EXPIRES_MIN: int = 60  # czas ważności access tokenu
+    JWT_ALG: str | None = "HS256"
+    JWT_EXPIRES_MIN: int | None = 60  # czas ważności access tokenu
     JWT_ISSUER: str | None = "lms-user-service"
     JWT_AUDIENCE: str | None = "lms"
 

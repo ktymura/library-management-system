@@ -95,6 +95,18 @@ Swagger UI dostępny pod: <http://localhost:8002/docs>
 
 Swagger UI dostępny pod: <http://localhost:8003/docs>
 
+### Seed danych demo
+W trybie demo (`APP_ENV=demo`) dostępny jest skrypt seedujący dane dla wszystkich serwisów jedną komendą.
+```powershell
+.\seed-all.ps1
+```
+Skrypt uruchamia seedy kolejno dla:
+- user-service
+- catalog-service
+- circulation-service
+
+Seedowanie jest idempotentne – wielokrotne uruchomienie nie powoduje duplikacji danych.
+
 ## Komponenty systemu
 
 - **user-service**
