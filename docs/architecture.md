@@ -57,7 +57,7 @@ Projekt zrealizowany jest w architekturze mikroserwisowej. Każdy serwis:
   - aktualizacji statusu egzemplarza (AVAILABLE ↔ LOANED),
 - udostępnia endpointy:
   - `/loans` (tworzenie wypożyczenia),
-  - `/returns/{loanId}` (zwrot wypożyczenia),
+  - `/loans/{loanId}/return` (zwrot wypożyczenia),
   - `/health`,
   - `/health/db`,
 - wykorzystuje FastAPI, SQLAlchemy 2.0 oraz Alembic,
@@ -105,7 +105,16 @@ Operacja wypożyczenia jest inicjowana przez użytkownika z rolą LIBRARIAN (lub
     - copy_id – identyfikator egzemplarza,
     - user_id – identyfikator czytelnika, któremu wypożyczany jest egzemplarz.
 - circulation-service realizuje logikę domenową i tworzy rekord Loan (status ACTIVE).
-- Następnie circulation-service aktualizuje status egzemplarza w catalog-service (np. AVAILABLE → LOANED).
+- Następnie circulation-service aktualizuje status egzemplarza w catalog-service (np. AVAILABLE -> LOANED).
+
+### Proces zwrotu
+
+Zwrot inicjuje bibliotekarz (LIBRARIAN/ADMIN) przez POST /loans/{loanId}/return.
+- circulation-service:
+    - wyszukuje Loan,
+    - waliduje, że Loan ma status ACTIVE,
+    - ustawia Loan.status=RETURNED i returned_at,
+    - aktualizuje status egzemplarza w catalog-service: LOANED -> AVAILABLE.
 
 ### Autoryzacja service-to-service
 catalog-service chroni operacje modyfikujące status egzemplarzy przy użyciu JWT i wymaga roli LIBRARIAN lub ADMIN.
@@ -114,7 +123,8 @@ W komunikacji serwis–serwis circulation-service używa serwisowego tokenu JWT 
 
 ### Spójność danych i odporność na błędy
 Aby ograniczyć niespójność między serwisami, circulation-service stosuje kompensację:
-- jeśli utworzenie Loan zakończy się sukcesem, ale aktualizacja statusu kopii w catalog-service nie powiedzie się, rekord Loan jest wycofywany (usuwany) w tej samej transakcji.
+- jeśli utworzenie Loan zakończy się sukcesem, ale aktualizacja statusu kopii w catalog-service nie powiedzie się, rekord Loan jest wycofywany (usuwany) w tej samej transakcji,
+- jeśli aktualizacja w catalog-service nie powiedzie się podczas zwrotu, circulation-service cofa zmianę w Loan (przywraca ACTIVE i returned_at=None) i zwraca błąd integracji.
 Dodatkowo baza danych circulation-service posiada ograniczenie zapewniające, że dla jednego copy_id może istnieć tylko jedno aktywne wypożyczenie (ACTIVE) w danym momencie (partial unique index).
 
 ## 3. Baza danych
